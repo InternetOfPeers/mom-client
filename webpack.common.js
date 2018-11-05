@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
 	entry: [
 		"./src/scss/index.scss",
-		"simplemde/dist/simplemde.min.css",		
+		"simplemde/dist/simplemde.min.css",
 		"./src/assets/css/editor.css",
 		"./src/assets/css/sticky-footer-navbar.css",
 		"./src/editor.js",

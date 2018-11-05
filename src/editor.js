@@ -15,11 +15,11 @@ const EditorDefaultOptions = {
 	//hideIcons: ["fullscreen"],
 	placeholder: "Write your MOM...",
 	spellChecker: false,
-	status: ["autosave", "lines", "words", "cursor"]	
+	status: ["autosave", "lines", "words", "cursor"]
 };
 
 /**
- * 
+ *
  */
 class Editor {
 	constructor(options) {

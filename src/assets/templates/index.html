@@ -80,14 +80,16 @@
 			<div class="tab-pane fade show active" id="status" role="tabpanel" aria-labelledby="status-tab">
 				<p><span>Ethereum</span>
 					<ul>
-						<li>Connected: <span type="text" data-bind="text: ethStatus"></span></li>
-						<li>Block number: <span type="text" data-bind="text: ethBlockNumber"></span></li>
-						<li>Current address: <span type="text" data-bind="text: ethAddress"></span></li>
+						<li>Connected: <span data-bind="text: ethStatus"></span></li>
+						<li>Network ID: <span data-bind="text: ethNetworkID"></span></li>
+						<li>Network name: <span data-bind="text: ethNetworkName"></span></li>
+						<li>Block number: <span data-bind="text: ethBlockNumber"></span></li>
+						<li>Current address: <span data-bind="text: ethAddress"></span></li>
 					</ul>
 				</p>
 				<p><span>IPFS</span>
 					<ul>
-						<li>Connected: <span type="text" data-bind="text: ipfsStatus"></span></li>
+						<li>Connected: <span data-bind="text: ipfsStatus"></span></li>
 					</ul>
 				</p>
 			</div>

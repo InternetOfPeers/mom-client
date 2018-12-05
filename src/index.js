@@ -4,6 +4,7 @@ const log = require("loglevel");
 const Editor = require("./editor");
 const ethers = require("ethers");
 const ko = require("knockout");
+const marked = require("marked");
 require("bootstrap");
 
 // Messages
@@ -35,6 +36,8 @@ ko.applyBindings(model);
 // Init the editor
 const editor = new Editor();
 editor.init();
+// set sanitize option to ignore html input
+marked.setOptions({ sanitize: true });
 
 window.addEventListener("load", async () => {
 	if (window.ethereum) {

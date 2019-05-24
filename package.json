@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --inspect --inspect-brk node_modules/webpack-dev-server/bin/webpack-dev-server.js --open --config webpack.dev.js",
+    "start": "node --inspect node_modules/webpack-dev-server/bin/webpack-dev-server.js --open --config webpack.dev.js",
+    "start-paused": "node --inspect --inspect-brk node_modules/webpack-dev-server/bin/webpack-dev-server.js --open --config webpack.dev.js",
     "start-no-inspect": "webpack-dev-server --open --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js"
   },

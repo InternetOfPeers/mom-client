@@ -6,18 +6,14 @@
 	<title>
 		<%= htmlWebpackPlugin.options.title %>
 	</title>
-	<!-- Problems if I use webpack... why?--
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous"> -->
 </head>
 
 <body>
-
 	<header>
 		<!-- Fixed navbar -->
 		<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
 			<a class="navbar-brand" href="#">Fixed navbar</a>
-			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
-			 aria-expanded="false" aria-label="Toggle navigation">
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
 			<div class="collapse navbar-collapse" id="navbarCollapse">
@@ -44,10 +40,9 @@
 	<!-- Begin page content -->
 	<main role="main" class="container">
 		<h1 class="mt-5">Sticky footer with fixed navbar</h1>
-		<i class="fab fa-ethereum"></i> - <i class="fa fa-rocket"></i>
-		<p><i class="fab fa-ethereum"></i> - <i class="fas fa-stroopwafel"></i> - <i class="fab fa-font-awesome"></i></p>
 		<p class="lead">Pin a fixed-height footer to the bottom of the viewport in desktop browsers with this custom
-			HTML and CSS. A fixed navbar has been added with <code>padding-top: 60px;</code> on the <code>body &gt; .container</code>.</p>
+			HTML and CSS. A fixed navbar has been added with <code>padding-top: 60px;</code> on the <code>body &gt;
+				.container</code>.</p>
 
 		<ul class="nav nav-tabs" id="myTab" role="tablist">
 			<li class="nav-item">
@@ -55,12 +50,10 @@
 					Message</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" id="settings-tab" data-toggle="tab" href="#settings" role="tab" aria-controls="settings"
-				 aria-selected="false">Settings</a>
+				<a class="nav-link" id="settings-tab" data-toggle="tab" href="#settings" role="tab" aria-controls="settings" aria-selected="false">Settings</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link active" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status"
-				 aria-selected="false">Status</a>
+				<a class="nav-link active" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="false">Status</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="help-tab" data-toggle="tab" href="#help" role="tab" aria-controls="help" aria-selected="false">Help</a>
@@ -78,7 +71,7 @@
 				<p>Lo lo lo lo </p>
 			</div>
 			<div class="tab-pane fade show active" id="status" role="tabpanel" aria-labelledby="status-tab">
-				<p><span>Ethereum</span>
+				<p><span style="color: #657422"><i class="fab fa-ethereum fa-2x"></i></span> <span>Ethereum</span>
 					<ul>
 						<li>Connected: <span data-bind="text: ethStatus"></span></li>
 						<li>Network ID: <span data-bind="text: ethNetworkID"></span></li>

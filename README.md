@@ -11,7 +11,7 @@ A *live* version of MOM can be found on IPFS:
 Or, you can also use the app from GitHub servers:
 - [TBD](#TBD)
 
-## Develop by your own
+## How to contribute or develop your own ÐApp
 
 Clone the repository with:
 
@@ -21,6 +21,12 @@ $ cd mom
 $ npm install
 $ npm start
 ```
+
+## VSCode plugins
+
+- Beautify ([hookyqr.beautify](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify))
+- ESLint ([dbaeumer.vscode-eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint))
+- EditorConfig for VS Code ([editorconfig.editorconfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig))
 
 ## Project's rationales
 

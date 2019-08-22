@@ -23,7 +23,7 @@ function defaultModel() {
 	self.ethNetworkID = ko.observable(0);
 	self.ethNetworkName = ko.observable(__unknown);
 	self.ethBlockNumber = ko.observable(0);
-	self.ethStatus = ko.pureComputed(function() {
+	self.ethStatus = ko.pureComputed(function () {
 		return (self.ethBlockNumber() > 0 && self.ethNetworkID() > 0) ? __online : __offline;
 	});
 	self.ethAddress = ko.observable(__lockedAccount);
@@ -45,12 +45,12 @@ window.addEventListener("load", async () => {
 			// Request account access if needed
 			await window.ethereum.enable();
 			let provider = new ethers.providers.Web3Provider(window.ethereum);
-			provider.listAccounts().then(function(values) {
+			provider.listAccounts().then(function (values) {
 				if (values[0]) model.ethAddress(values[0]);
 				log.debug("Current address:", model.ethAddress());
 			});
 			provider.getBlockNumber().then(model.ethBlockNumber);
-			provider.getNetwork().then(function(network) {
+			provider.getNetwork().then(function (network) {
 				if (network) {
 					model.ethNetworkID(network.chainId);
 					model.ethNetworkName(network.name);
@@ -61,20 +61,25 @@ window.addEventListener("load", async () => {
 			});
 			// Events
 			provider.on("block", (blockNumber) => {
-				model.ethBlockNumber(blockNumber);
-
 				log.debug("New block:", blockNumber);
+				model.ethBlockNumber(blockNumber);
 			});
-			provider._web3Provider.publicConfigStore.on("update", function(event) {
+			provider._web3Provider.publicConfigStore.on("update", function (event) {
 				// Get changes made by user on MetaMask
 				if (event.selectedAddress) model.ethAddress(event.selectedAddress);
 				else model.ethAddress(__lockedAccount);
-				model.ethNetworkID(event.networkVersion);
-				let network = ethers.utils.getNetwork(parseInt(event.networkVersion));
-				if (network) model.ethNetworkName(network.name);
-				else model.ethNetworkName(__unknown);
 				// Get new block number
-				provider.getBlockNumber().then(model.ethBlockNumber);
+				provider.getBlockNumber().then(function (result) {
+					model.ethBlockNumber(result);
+					// Reset events if network changed
+					if (model.ethNetworkID() != event.networkVersion) {
+						provider.resetEventsBlock(result);
+					}
+					model.ethNetworkID(event.networkVersion);
+					let network = ethers.utils.getNetwork(parseInt(event.networkVersion));
+					if (network) model.ethNetworkName(network.name);
+					else model.ethNetworkName(__unknown);
+				});
 			});
 		} catch (error) {
 			// User denied account access...

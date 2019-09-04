@@ -10,91 +10,98 @@
 
 <body>
 	<header>
-		<!-- Fixed navbar -->
-		<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-			<a class="navbar-brand" href="#">Fixed navbar</a>
-			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div class="collapse navbar-collapse" id="navbarCollapse">
-				<ul class="navbar-nav mr-auto">
-					<li class="nav-item active">
-						<a class="nav-link" href="#">Home
-							<span class="sr-only">(current)</span></a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="#">Link</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link disabled" href="#">Disabled</a>
-					</li>
-				</ul>
-				<form class="form-inline mt-2 mt-md-0">
-					<input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-					<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-				</form>
-			</div>
-		</nav>
+
 	</header>
 
-	<!-- Begin page content -->
 	<main role="main" class="container">
-		<h1 class="mt-5">Sticky footer with fixed navbar</h1>
-		<p class="lead">Pin a fixed-height footer to the bottom of the viewport in desktop browsers with this custom
-			HTML and CSS. A fixed navbar has been added with <code>padding-top: 60px;</code> on the <code>body &gt;
-				.container</code>.</p>
-
+		<h1 class="">My Own Messages</h1>
+		<p class="lead">Write and read your own certified messages to the permanent web.</p>
 		<ul class="nav nav-tabs" id="myTab" role="tablist">
 			<li class="nav-item">
-				<a class="nav-link" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">New
+				<a class="nav-link active" id="new-message-tab" data-toggle="tab" href="#new-message" role="tab" aria-controls="new-message" aria-selected="true">New
 					Message</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="message-list-tab" data-toggle="tab" href="#message-list" role="tab" aria-controls="message-list" aria-selected="false">Message list</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="false">Status</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="settings-tab" data-toggle="tab" href="#settings" role="tab" aria-controls="settings" aria-selected="false">Settings</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link active" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="false">Status</a>
-			</li>
-			<li class="nav-item">
 				<a class="nav-link" id="help-tab" data-toggle="tab" href="#help" role="tab" aria-controls="help" aria-selected="false">Help</a>
 			</li>
-
 		</ul>
 		<div class="tab-content" id="myTabContent">
-			<div class="tab-pane fade" id="home" role="tabpanel" aria-labelledby="home-tab">
-				<p>Lorem Ipsum</p>
-				<p id="messageBox" class="messageBox">
-					<textarea id="currentMessage"></textarea>
-				</p>
+			<div class="tab-pane fade show active" id="new-message" role="tabpanel" aria-labelledby="home-tab">
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<div class="col-md">
+							<p id="messageBox" class="messageBox">
+								<textarea id="currentMessage"></textarea>
+							</p>
+						</div>
+						<div>
+							<button id="publish" type="button" class="btn btn-primary float-right">Publish</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane fade" id="message-list" role="tabpanel" aria-labelledby="message-list-tab"></div>
+			<div class="tab-pane fade" id="status" role="tabpanel" aria-labelledby="status-tab">
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<div class="col-md">
+							<p><span style="color: #1a6699"><i class="fab fa-ethereum fa-2x"></i></span> <span>Ethereum</span>
+								<ul>
+									<li>Connected: <span data-bind="text: ethStatus"></span></li>
+									<li>Network ID: <span data-bind="text: ethNetworkID"></span></li>
+									<li>Network name: <span data-bind="text: ethNetworkName"></span></li>
+									<li>Block number: <span data-bind="text: ethBlockNumber"></span></li>
+									<li>Current address: <strong><span data-bind="text: ethAddress"></span></strong></li>
+								</ul>
+							</p>
+							<p><span style="color: #1a6699"><i class="fas fa-cube fa-2x"></i></span> <span>IPFS</span>
+								<ul>
+									<li>Connected: <span data-bind="text: ipfsStatus"></span></li>
+								</ul>
+							</p>
+						</div>
+						<div>
+							<button id="refresh" type="button" class="btn btn-primary float-right" disabled>Refresh</button>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
-				<p>Lo lo lo lo </p>
-			</div>
-			<div class="tab-pane fade show active" id="status" role="tabpanel" aria-labelledby="status-tab">
-				<p><span style="color: #657422"><i class="fab fa-ethereum fa-2x"></i></span> <span>Ethereum</span>
-					<ul>
-						<li>Connected: <span data-bind="text: ethStatus"></span></li>
-						<li>Network ID: <span data-bind="text: ethNetworkID"></span></li>
-						<li>Network name: <span data-bind="text: ethNetworkName"></span></li>
-						<li>Block number: <span data-bind="text: ethBlockNumber"></span></li>
-						<li>Current address: <span data-bind="text: ethAddress"></span></li>
-					</ul>
-				</p>
-				<p><span>IPFS</span>
-					<ul>
-						<li>Connected: <span data-bind="text: ipfsStatus"></span></li>
-					</ul>
-				</p>
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<div class="col-md">
+							<p>
+								All the settings are local to your current browser. No remote servers were harmed in the storing of these settings.
+							</p>
+						</div>
+						<div>
+							<button id="save" type="button" class="btn btn-primary float-right" disabled>Save</button>
+						</div>
+					</div>
+				</div>
 			</div>
 			<div class="tab-pane fade" id="help" role="tabpanel" aria-labelledby="help-tab">
-				<p>La La la la </p>
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<p>How to (TODO)</p>
+					</div>
+				</div>
 			</div>
 		</div>
 	</main>
 
 	<footer class="footer">
 		<div class="container">
-			<span class="text-muted">Place sticky footer content here.</span>
+			<span class="text-muted">Created with <span style="color: #c00921"><i class="fas fa-heart"></i></span> by <a href="https://github.com/neurone">Giuseppe Bertone</a>.</span>
 		</div>
 	</footer>
 </body>

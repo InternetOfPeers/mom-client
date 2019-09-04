@@ -5,9 +5,9 @@
 	"private": true,
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "node --inspect node_modules/webpack-dev-server/bin/webpack-dev-server.js --open --config webpack.dev.js",
-		"start-paused": "node --inspect --inspect-brk node_modules/webpack-dev-server/bin/webpack-dev-server.js --open --config webpack.dev.js",
-		"start-no-inspect": "webpack-dev-server --open --config webpack.dev.js",
+		"start": "node --inspect node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.dev.js",
+		"start-paused": "node --inspect --inspect-brk node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.dev.js",
+		"start-no-inspect": "webpack-dev-server --config webpack.dev.js",
 		"build": "webpack --config webpack.prod.js"
 	},
 	"sideEffects": [
@@ -18,7 +18,7 @@
 	"dependencies": {
 		"bootstrap": "^4.3.1",
 		"ethers": "^4.0.33",
-		"ipfs-http-client": "^32.0.0",
+		"ipfs-http-client": "^35.0.0",
 		"jquery": "^3.3.1",
 		"knockout": "^3.4.2",
 		"lodash": "^4.17.15",

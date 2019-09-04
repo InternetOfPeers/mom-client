@@ -5,6 +5,8 @@ const Editor = require("./editor");
 const ethers = require("ethers");
 const ko = require("knockout");
 const marked = require("marked");
+const ipfsClient = require("ipfs-http-client");
+
 require("bootstrap");
 
 // Messages
@@ -13,6 +15,9 @@ const __legacyBrowserWarning = "Legacy or non-Ethereum browser detected. You sho
 const __online = "online";
 const __offline = "offline";
 const __unknown = "unknown";
+
+// Settings
+const IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
 
 // Initial debug level
 log.setDefaultLevel(log.levels.DEBUG);
@@ -38,6 +43,14 @@ const editor = new Editor();
 editor.init();
 // set sanitize option to ignore html input
 marked.setOptions({ sanitize: true });
+
+// Init IPFS
+let ipfs = ipfsClient(IPFS_DAEMON_MULTIADDR);
+
+async function refreshIPFSStatus(ms = 2000) {
+	if (ipfs) await ipfs.id((err) => { if (!err) model.ipfsStatus(__online); else model.ipfsStatus(__offline); });
+	setTimeout(refreshIPFSStatus, ms);
+}
 
 window.addEventListener("load", async () => {
 	if (window.ethereum) {
@@ -90,4 +103,9 @@ window.addEventListener("load", async () => {
 	else {
 		log.info(__legacyBrowserWarning);
 	}
+
+	// Start refresh loop for IPFS daemon status
+	refreshIPFSStatus();
 });
+
+

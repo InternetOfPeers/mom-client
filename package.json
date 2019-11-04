@@ -17,18 +17,18 @@
 	"license": "MIT",
 	"dependencies": {
 		"bootstrap": "^4.3.1",
-		"ethers": "^4.0.33",
-		"ipfs-http-client": "^35.0.0",
+		"ethers": "^4.0.39",
+		"ipfs-http-client": "^39.0.2",
 		"jquery": "^3.3.1",
 		"knockout": "^3.4.2",
 		"lodash": "^4.17.15",
-		"loglevel": "^1.6.1",
+		"loglevel": "^1.6.4",
 		"popper.js": "^1.14.4",
 		"simplemde": "^1.11.2"
 	},
 	"devDependencies": {
-		"@fortawesome/fontawesome-free": "^5.8.2",
-		"autoprefixer": "^9.5.1",
+		"@fortawesome/fontawesome-free": "^5.11.2",
+		"autoprefixer": "^9.7.1",
 		"clean-webpack-plugin": "^0.1.19",
 		"css-loader": "^1.0.1",
 		"eslint": "^5.16.0",
@@ -40,14 +40,14 @@
 		"html-webpack-plugin": "^3.2.0",
 		"http-server": "^0.11.1",
 		"image-webpack-loader": "^4.6.0",
-		"node-sass": "^4.12.0",
+		"node-sass": "^4.13.0",
 		"postcss-loader": "^3.0.0",
-		"sass-loader": "^7.1.0",
+		"sass-loader": "^7.3.1",
 		"style-loader": "^0.23.1",
 		"url-loader": "^1.1.2",
-		"webpack": "^4.32.2",
-		"webpack-cli": "^3.3.2",
-		"webpack-dev-server": "^3.4.1",
-		"webpack-merge": "^4.2.1"
+		"webpack": "^4.41.2",
+		"webpack-cli": "^3.3.10",
+		"webpack-dev-server": "^3.9.0",
+		"webpack-merge": "^4.2.2"
 	}
 }

@@ -38,3 +38,7 @@ body>.container {
 code {
 	font-size: 80%;
 }
+
+.bold {
+	font-weight: bold;
+}

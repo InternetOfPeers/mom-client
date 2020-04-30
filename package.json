@@ -19,7 +19,7 @@
 		"bootstrap": "^4.3.1",
 		"ethers": "^4.0.39",
 		"ipfs-http-client": "^39.0.2",
-		"jquery": "^3.3.1",
+		"jquery": "^3.5.0",
 		"knockout": "^3.4.2",
 		"lodash": "^4.17.15",
 		"loglevel": "^1.6.4",

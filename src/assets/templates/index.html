@@ -9,10 +9,7 @@
 </head>
 
 <body>
-	<header>
-
-	</header>
-
+	<header></header>
 	<main role="main" class="container">
 		<h1 class="">My Own Messages</h1>
 		<p class="lead">Write and read your own certified messages to the permanent web.</p>
@@ -43,7 +40,7 @@
 							</p>
 						</div>
 						<div>
-							<button id="publish" type="button" class="btn btn-primary float-right">Publish</button>
+							<button id="publish" type="button" class="btn btn-primary float-right" data-bind="click: publish">Publish</button>
 						</div>
 					</div>
 				</div>
@@ -69,7 +66,7 @@
 							</p>
 						</div>
 						<div>
-							<button id="refresh" type="button" class="btn btn-primary float-right" disabled>Refresh</button>
+							<button id="refresh" type="button" class="btn btn-primary float-right" data-bind="click: refreshStatus">Refresh</button>
 						</div>
 					</div>
 				</div>
@@ -83,7 +80,7 @@
 							</p>
 						</div>
 						<div>
-							<button id="save" type="button" class="btn btn-primary float-right" disabled>Save</button>
+							<button id="save" type="button" class="btn btn-primary float-right" data-bind="click: saveSettings">Save</button>
 						</div>
 					</div>
 				</div>

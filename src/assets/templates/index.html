@@ -11,6 +11,26 @@
 <body>
 	<header></header>
 	<main role="main" class="container">
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalTitle" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="myModalTitle"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body" id="myModalMessage">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" data-bind="enable: canSign">Next: Sign the message</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Content -->
 		<h1 class="">My Own Messages</h1>
 		<p class="lead">Write and read your own certified messages to the permanent web.</p>
 		<ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -80,7 +100,7 @@
 							</p>
 						</div>
 						<div>
-							<button id="save" type="button" class="btn btn-primary float-right" data-bind="click: saveSettings">Save</button>
+							<button id="save" type="button" class="btn btn-primary float-right" disabled>Save</button>
 						</div>
 					</div>
 				</div>

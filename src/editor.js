@@ -22,12 +22,17 @@ const EditorDefaultOptions = {
  *
  */
 class Editor {
+
 	constructor(options) {
 		this.options = _.defaultsDeep(options, EditorDefaultOptions);
 	}
 
 	init() {
-		new SimpleMDE(this.options);
+		this.editor = new SimpleMDE(this.options);
+	}
+
+	value() {
+		return this.editor.value();
 	}
 
 	printMe() {

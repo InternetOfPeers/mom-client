@@ -4,6 +4,9 @@ const ethers = require("ethers");
 const ko = require("knockout");
 const marked = require("marked");
 const ipfsClient = require("ipfs-http-client");
+const hash = require("hash.js");
+const multihash = require("multihashes");
+const $ = require("jquery");
 
 require("bootstrap");
 
@@ -21,33 +24,6 @@ const IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
 // Initial debug level
 log.setDefaultLevel(log.levels.DEBUG);
 
-// Default model
-function defaultViewModel() {
-	var self = this;
-	self.ethNetworkID = ko.observable(0);
-	self.ethNetworkName = ko.observable(__unknown);
-	self.ethBlockNumber = ko.observable(0);
-	self.ethStatus = ko.pureComputed(function () {
-		return (self.ethBlockNumber() > 0 && self.ethNetworkID() > 0) ? __online : __offline;
-	});
-	self.ethAddress = ko.observable(__lockedAccount);
-	self.ipfsStatus = ko.observable(__offline);
-	self.publish = function () {
-		log.debug("TODO: Publish");
-		//TODO
-	};
-	self.refreshStatus = function () {
-		refreshIPFSStatus(-1);
-	};
-	self.saveSettings = function () {
-		log.debug("TODO:Save settings");
-		//TODO
-	};
-}
-
-const model = new defaultViewModel();
-ko.applyBindings(model);
-
 // Init the editor
 const editor = new Editor();
 editor.init();
@@ -58,14 +34,89 @@ marked.setOptions({ sanitize: true });
 let ipfs = ipfsClient(IPFS_DAEMON_MULTIADDR);
 let ipfsRefreshing = false;
 
-async function refreshIPFSStatus(ms = 5000) {
+// Ethereum
+let provider;
+
+// Default model
+function defaultViewModel() {
+	var self = this;
+	self.ethNetworkID = ko.observable(0);
+	self.ethNetworkName = ko.observable(__unknown);
+	self.ethBlockNumber = ko.observable(0);
+	self.ethStatus = ko.pureComputed(function () {
+		return (self.ethBlockNumber() > 0 && self.ethNetworkID() > 0) ? __online : __offline;
+	});
+	self.canSign = ko.pureComputed(function () {
+		return self.ethStatus() == __online;
+	});
+	self.ethAddress = ko.observable(__lockedAccount);
+	self.ipfsStatus = ko.observable(__offline);
+	self.canPublish = ko.computed(function () {
+		return self.ipfsStatus() == __online;
+	});
+	self.publish = function () {
+		publishToIPFS(editor.value(), ipfs);
+	};
+	self.refreshStatus = function () {
+		refreshIPFSStatus(-1);
+	};
+}
+const model = new defaultViewModel();
+ko.applyBindings(model);
+
+/**
+ * Store raw message to IPFS and save the multihash to Ethereum
+ *
+ * @param {string} message
+ * @param {Object} ipfs
+ * @param {Object} provider
+ */
+let publishToIPFS = async function (message = "", ipfs) {
+	if (!model.canPublish()) return showNotReady();
+	// Even if IPFS encodes CID in multihash it uses always sha3-256 algorithm, so we store that value inside Ethereum.
+	// This is not mandatory and the same content can be represented in different formats on different storage system.
+	// The "truth" to check against remains what's inside Ethereum transactions.
+	let buffer = Buffer.from(message);
+	let digest = Buffer.from(hash.sha256().update(message).digest());
+	let encodedMultihash = multihash.encode(digest, "sha2-256");
+	await ipfs.block.put(buffer).then(async function (block) {
+		if (block.data.equals(buffer) && block.cid.multihash.equals(encodedMultihash)) {
+			let cid = block.cid.toString();
+			successfulPublishing(cid);
+		} else {
+			// Something went wrong
+			log.error("Error saving message to IPFS");
+			log.debug("block.data", block.data, "message", message);
+			log.debug("block.cid.multihash", block.cid.multihash, "encodedMultihash", encodedMultihash);
+		}
+	}).catch(function (error) {
+		log.error("Error saving message to IPFS", error);
+	});
+};
+
+let showNotReady = function () {
+	$("#myModalTitle").text("Cannot publish to IPFS");
+	$("#myModalMessage").text("You are not connected to any IPFS node. Please check Status and Settings.");
+	$("#myModal").modal("show");
+	return false;
+};
+
+let successfulPublishing = function (cid) {
+	$("#myModalTitle").text("Success");
+	$("#myModalMessage").text("Message published to IPFS with CID: " + cid);
+	$("#myModal").modal("show");
+};
+
+/**
+ *
+ * @param {number} ms
+ */
+let refreshIPFSStatus = async function (ms = 5000) {
 	if (!ipfsRefreshing) {
-		log.debug("Refreshing IPFS status...");
 		ipfsRefreshing = true;
 		try {
 			if (ipfs) {
 				let id = await ipfs.id();
-				log.debug("IPFS ID", id);
 				if (id) model.ipfsStatus(__online);
 				else model.ipfsStatus(__offline);
 			}
@@ -77,14 +128,17 @@ async function refreshIPFSStatus(ms = 5000) {
 		}
 		if (ms > 0) setTimeout(refreshIPFSStatus, ms);
 	}
-}
+};
 
 window.addEventListener("load", async () => {
+	// Start refresh loop for IPFS daemon status
+	refreshIPFSStatus();
+	// Check Ethereum
 	if (window.ethereum) {
 		try {
 			// Request access to the Ethereum wallet
 			await window.ethereum.enable();
-			let provider = new ethers.providers.Web3Provider(window.ethereum);
+			provider = new ethers.providers.Web3Provider(window.ethereum);
 			provider.listAccounts().then(function (values) {
 				if (values[0]) model.ethAddress(values[0]);
 				log.debug("Current address:", model.ethAddress());
@@ -130,8 +184,5 @@ window.addEventListener("load", async () => {
 		model.ethAddress(__legacyBrowserWarning);
 		log.info(__legacyBrowserWarning);
 	}
-
-	// Start refresh loop for IPFS daemon status
-	refreshIPFSStatus();
 });
 

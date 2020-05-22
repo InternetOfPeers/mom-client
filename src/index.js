@@ -47,7 +47,7 @@ function defaultViewModel() {
 		return (self.ethBlockNumber() > 0 && self.ethNetworkID() > 0) ? __online : __offline;
 	});
 	self.canSign = ko.pureComputed(function () {
-		return self.ethStatus() == __online;
+		return self.canPublish() && (self.ethStatus() == __online);
 	});
 	self.ethAddress = ko.observable(__lockedAccount);
 	self.ipfsStatus = ko.observable(__offline);

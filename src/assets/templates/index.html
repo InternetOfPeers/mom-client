@@ -21,11 +21,12 @@
 							<span aria-hidden="true">&times;</span>
 						</button>
 					</div>
-					<div class="modal-body" id="myModalMessage">
+					<div class="modal-body">
+						<p id="myModalMessage"></p>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" data-bind="enable: canSign">Next: Sign the message</button>
+						<button type="button" class="btn btn-primary" data-bind="visible: canSign">Next: Sign the message</button>
 					</div>
 				</div>
 			</div>

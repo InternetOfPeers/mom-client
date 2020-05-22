@@ -1,5 +1,4 @@
 const path = require("path");
-
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
@@ -8,6 +7,7 @@ module.exports = {
 		"simplemde/dist/simplemde.min.css",
 		"./src/assets/css/editor.css",
 		"./src/assets/css/sticky-footer-navbar.css",
+		"./src/config.common.js",
 		"./src/editor.js",
 		"./src/index.js"
 	],
@@ -36,7 +36,7 @@ module.exports = {
 				}, {
 					loader: "postcss-loader", // Run post css actions
 					options: {
-						plugins: function() { // post css plugins, can be exported to postcss.config.js
+						plugins: function () { // post css plugins, can be exported to postcss.config.js
 							return [
 								require("autoprefixer")
 							];

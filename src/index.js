@@ -1,6 +1,5 @@
 const assert = require("assert");
 const log = require("loglevel");
-const Editor = require("./editor");
 const ethers = require("ethers");
 const ko = require("knockout");
 const marked = require("marked");
@@ -8,6 +7,7 @@ const ipfsClient = require("ipfs-http-client");
 const hash = require("hash.js");
 const multihashes = require("multihashes");
 const $ = require("jquery");
+const Editor = require("./editor");
 const MOM = require("./mom");
 
 require("bootstrap");
@@ -24,9 +24,6 @@ const __pending = "pending";
 
 // Settings
 const IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
-
-// Initial debug level
-log.setDefaultLevel(log.levels.DEBUG);
 
 // Init the editor
 const editor = new Editor();

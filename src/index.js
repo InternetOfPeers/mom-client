@@ -1,3 +1,4 @@
+const assert = require("assert");
 const log = require("loglevel");
 const Editor = require("./editor");
 const ethers = require("ethers");
@@ -5,8 +6,9 @@ const ko = require("knockout");
 const marked = require("marked");
 const ipfsClient = require("ipfs-http-client");
 const hash = require("hash.js");
-const multihash = require("multihashes");
+const multihashes = require("multihashes");
 const $ = require("jquery");
+const MOM = require("./mom");
 
 require("bootstrap");
 
@@ -17,6 +19,8 @@ const __legacyBrowserWarning = "Legacy or non-Ethereum browser detected. You sho
 const __online = "online";
 const __offline = "offline";
 const __unknown = "unknown";
+const __na = "not available";
+const __pending = "pending";
 
 // Settings
 const IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
@@ -37,28 +41,51 @@ let ipfsRefreshing = false;
 // Ethereum
 let provider;
 
+/**
+ *
+ * @param {*} transactionHash
+ * @param {*} blockNumber
+ * @param {*} operation
+ * @param {*} cid
+ */
+function Message(transactionHash, blockNumber, operation, cid) {
+	let self = this;
+	self.transactionHash = transactionHash;
+	self.transactionHashLink = "<a href='https://etherscan.io/tx/" + transactionHash + "'>" + transactionHash.substring(0, 10) + "..." + "</a>";
+	self.blockNumber = ko.observable(blockNumber);
+	self.operation = ko.observable(operation);
+	self.cid = cid;
+}
+
 // Default model
 function defaultViewModel() {
 	var self = this;
+	// State
 	self.ethNetworkID = ko.observable(0);
 	self.ethNetworkName = ko.observable(__unknown);
 	self.ethBlockNumber = ko.observable(0);
+	self.ethAddress = ko.observable(__lockedAccount);
 	self.ethStatus = ko.pureComputed(function () {
 		return (self.ethBlockNumber() > 0 && self.ethNetworkID() > 0) ? __online : __offline;
 	});
 	self.canSign = ko.pureComputed(function () {
 		return self.canPublish() && (self.ethStatus() == __online);
 	});
-	self.ethAddress = ko.observable(__lockedAccount);
+	self.messageList = ko.observableArray([]);
 	self.ipfsStatus = ko.observable(__offline);
+	self.lastCID = ko.observable(__na);
 	self.canPublish = ko.computed(function () {
 		return self.ipfsStatus() == __online;
 	});
+	// Functions
+	self.refreshStatus = function () {
+		refreshIPFSStatus(-1);
+	};
 	self.publish = function () {
 		publishToIPFS(editor.value(), ipfs);
 	};
-	self.refreshStatus = function () {
-		refreshIPFSStatus(-1);
+	self.addMessage = function () {
+		addMessage(multihashes.fromB58String(self.lastCID), provider);
 	};
 }
 const model = new defaultViewModel();
@@ -69,7 +96,6 @@ ko.applyBindings(model);
  *
  * @param {string} message
  * @param {Object} ipfs
- * @param {Object} provider
  */
 let publishToIPFS = async function (message = "", ipfs) {
 	if (!model.canPublish()) return showNotReady();
@@ -77,34 +103,60 @@ let publishToIPFS = async function (message = "", ipfs) {
 	// This is not mandatory and the same content can be represented in different formats on different storage system.
 	// The "truth" to check against remains what's inside Ethereum transactions.
 	let buffer = Buffer.from(message);
-	let digest = Buffer.from(hash.sha256().update(message).digest());
-	let encodedMultihash = multihash.encode(digest, "sha2-256");
 	await ipfs.block.put(buffer).then(async function (block) {
-		if (block.data.equals(buffer) && block.cid.multihash.equals(encodedMultihash)) {
-			let cid = block.cid.toString();
-			successfulPublishing(cid);
-		} else {
-			// Something went wrong
-			log.error("Error saving message to IPFS");
-			log.debug("block.data", block.data, "message", message);
-			log.debug("block.cid.multihash", block.cid.multihash, "encodedMultihash", encodedMultihash);
-		}
+		// Do some sanity check
+		let digest = Buffer.from(hash.sha256().update(message).digest());
+		let encodedMultihash = multihashes.encode(digest, "sha2-256");
+		log.debug("decodedMultihash", multihashes.decode(encodedMultihash));
+		assert(block.data.equals(buffer) && block.cid.multihash.equals(encodedMultihash));
+		model.lastCID = block.cid.toString();
+		successfulPublishing(model.lastCID);
 	}).catch(function (error) {
 		log.error("Error saving message to IPFS", error);
 	});
 };
 
+/**
+ * Show a message to the user
+ */
 let showNotReady = function () {
 	$("#myModalTitle").text("Cannot publish to IPFS");
-	$("#myModalMessage").text("You are not connected to any IPFS node. Please check Status and Settings.");
+	$("#myModalMessage").text("You are not connected to any IPFS node. Please check Status and Settings pages.");
 	$("#myModal").modal("show");
 	return false;
 };
 
+/**
+ * Show a message to the user
+ * @param {string} cid
+ */
 let successfulPublishing = function (cid) {
 	$("#myModalTitle").text("Success");
 	$("#myModalMessage").text("Message published to IPFS with CID: " + cid);
 	$("#myModal").modal("show");
+};
+
+/**
+ * Send a "MOM add" transaction
+ * @param {string} digest
+ */
+let addMessage = function (multihash, provider) {
+	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
+	let request = { to: model.ethAddress(), value: 0, data: MOM.encodeAddMessage(multihash) };
+	let promise = provider.getSigner().sendTransaction(request);
+	promise.then(tx => {
+		log.debug("Signed transaction", tx.hash);
+		let cid = model.lastCID;
+		model.messageList.push(new Message(tx.hash, __pending, "Add", cid));
+		provider.once(tx.hash, (receipt) => {
+			log.debug("Mined transaction", receipt.transactionHash);
+			log.debug(receipt.blockNumber);
+			log.debug(receipt);
+			// Update results
+			let element = model.messageList().find(msg => (msg.transactionHash == receipt.transactionHash));
+			element.blockNumber(receipt.blockNumber);
+		});
+	}).catch(error => log.debug("Error while signing transaction", error));
 };
 
 /**
@@ -186,3 +238,72 @@ window.addEventListener("load", async () => {
 	}
 });
 
+
+
+
+/*
+
+Transaction Request
+{
+    // Required unless deploying a contract (in which case omit)
+    to: addressOrName,  // the target address or ENS name
+
+    // These are optional/meaningless for call and estimateGas
+    nonce: 0,           // the transaction nonce
+    gasLimit: 0,        // the maximum gas this transaction may spend
+    gasPrice: 0,        // the price (in wei) per unit of gas
+
+    // These are always optional (but for call, data is usually specified)
+    data: "0x",         // extra data for the transaction, or input for call
+    value: 0,           // the amount (in wei) this transaction is sending
+    chainId: 3          // the network ID; usually added by a signer
+}
+
+Transaction Response
+{
+    // Only available for mined transactions
+    blockHash: "0x7f20ef60e9f91896b7ebb0962a18b8defb5e9074e62e1b6cde992648fe78794b",
+    blockNumber: 3346463,
+    timestamp: 1489440489,
+
+    // Exactly one of these will be present (send vs. deploy contract)
+    // They will always be a properly formatted checksum address
+    creates: null,
+    to: "0xc149Be1bcDFa69a94384b46A1F91350E5f81c1AB",
+
+    // The transaction hash
+    hash: "0xf517872f3c466c2e1520e35ad943d833fdca5a6739cfea9e686c4c1b3ab1022e",
+
+    // See above "Transaction Requests" for details
+    data: "0x",
+    from: "0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8",
+    gasLimit: utils.bigNumberify("90000"),
+    gasPrice: utils.bigNumberify("21488430592"),
+    nonce: 0,
+    value: utils.parseEther(1.0017071732629267),
+
+    // The chain ID; 0 indicates replay-attack vulnerable
+    // (eg. 1 = Homestead mainnet, 3 = Ropsten testnet)
+    chainId: 1,
+
+    // The signature of the transaction (TestRPC may fail to include these)
+    r: "0x5b13ef45ce3faf69d1f40f9d15b0070cc9e2c92f3df79ad46d5b3226d7f3d1e8",
+    s: "0x535236e497c59e3fba93b78e124305c7c9b20db0f8531b015066725e4bb31de6",
+    v: 37,
+
+    // The raw transaction (TestRPC may be missing this)
+    raw: "0xf87083154262850500cf6e0083015f9094c149be1bcdfa69a94384b46a1f913" +
+           "50e5f81c1ab880de6c75de74c236c8025a05b13ef45ce3faf69d1f40f9d15b0" +
+           "070cc9e2c92f3df79ad46d5b3226d7f3d1e8a0535236e497c59e3fba93b78e1" +
+           "24305c7c9b20db0f8531b015066725e4bb31de6"
+}
+*/
+
+/*
+log.debug(multihash.fromB58String(model.lastCID));
+log.debug(multihash.fromB58String(model.lastCID).equals(model.lastEncodedMultihash));
+*/
+
+
+
+//essageList.find(el => (el.cid == "qmsdasa"))["cid"]="ciao"

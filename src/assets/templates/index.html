@@ -26,7 +26,7 @@
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" data-bind="visible: canSign">Next: Sign the message</button>
+						<button type="button" class="btn btn-primary" data-bind="visible: canSign, click: addMessage" data-dismiss="modal">Next: Add message on chain</button>
 					</div>
 				</div>
 			</div>
@@ -66,7 +66,32 @@
 					</div>
 				</div>
 			</div>
-			<div class="tab-pane fade" id="message-list" role="tabpanel" aria-labelledby="message-list-tab"></div>
+			<div class="tab-pane fade" id="message-list" role="tabpanel" aria-labelledby="message-list-tab">
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<div class="col-md">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>Operation</th>
+										<th>CID</th>
+										<th>Block</th>
+										<th>Transaction</th>
+									</tr>
+								</thead>
+								<tbody data-bind="foreach: messageList">
+									<tr>
+										<td data-bind="text: operation"></td>
+										<td data-bind="text: cid"></td>
+										<td data-bind="html: blockNumber"></td>
+										<td data-bind="html: transactionHashLink"></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
 			<div class="tab-pane fade" id="status" role="tabpanel" aria-labelledby="status-tab">
 				<div class="container-fluid">
 					<div class="row mt-3">
@@ -97,7 +122,7 @@
 					<div class="row mt-3">
 						<div class="col-md">
 							<p>
-								All the settings are local to your current browser. No remote servers were harmed in the storing of these settings.
+								All the settings are saved locally inside your current browser. No remote servers were harmed in the storing of these settings.
 							</p>
 						</div>
 						<div>

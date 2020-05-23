@@ -9,17 +9,35 @@
 </head>
 
 <body>
-	<header>
-
-	</header>
+	<header></header>
 
 	<main role="main" class="container">
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalTitle" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="myModalTitle"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p id="myModalMessage"></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" data-bind="visible: canSign, click: addMessage" data-dismiss="modal">Next: Add message on chain</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Content -->
 		<h1 class="">My Own Messages</h1>
 		<p class="lead">Write and read your own certified messages to the permanent web.</p>
 		<ul class="nav nav-tabs" id="myTab" role="tablist">
 			<li class="nav-item">
-				<a class="nav-link active" id="new-message-tab" data-toggle="tab" href="#new-message" role="tab" aria-controls="new-message" aria-selected="true">New
-					Message</a>
+				<a class="nav-link active" id="new-message-tab" data-toggle="tab" href="#new-message" role="tab" aria-controls="new-message" aria-selected="true">New Message</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="message-list-tab" data-toggle="tab" href="#message-list" role="tab" aria-controls="message-list" aria-selected="false">Message list</a>
@@ -44,33 +62,62 @@
 							</p>
 						</div>
 						<div>
-							<button id="publish" type="button" class="btn btn-primary float-right">Publish</button>
+							<button id="publish" type="button" class="btn btn-primary float-right" data-bind="click: publish">Publish</button>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div class="tab-pane fade" id="message-list" role="tabpanel" aria-labelledby="message-list-tab"></div>
+			<div class="tab-pane fade" id="message-list" role="tabpanel" aria-labelledby="message-list-tab">
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<div class="col-md">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>Actions</th>
+										<th>Type</th>
+										<th>Nonce</th>
+										<th>CID</th>
+										<th>Block</th>
+										<th>Transaction</th>
+									</tr>
+								</thead>
+								<tbody data-bind="foreach: messageListSorted">
+									<tr>
+										<td>update; reply; delete</td>
+										<td data-bind="text: operationComputed"></td>
+										<td data-bind="text: nonce"></td>
+										<td data-bind="text: cid"></td>
+										<td data-bind="html: blockNumberComputed"></td>
+										<td data-bind="html: transactionHashLink"></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
 			<div class="tab-pane fade" id="status" role="tabpanel" aria-labelledby="status-tab">
 				<div class="container-fluid">
 					<div class="row mt-3">
 						<div class="col-md">
 							<p><span style="color: #1a6699"><i class="fab fa-ethereum fa-2x"></i></span> <span>Ethereum</span>
 								<ul>
-									<li>Connected: <span data-bind="text: ethStatus"></span></li>
+									<li>Connection: <span class="bold" data-bind="text: ethStatus"></span></li>
 									<li>Network ID: <span data-bind="text: ethNetworkID"></span></li>
 									<li>Network name: <span data-bind="text: ethNetworkName"></span></li>
 									<li>Block number: <span data-bind="text: ethBlockNumber"></span></li>
-									<li>Current address: <strong><span data-bind="text: ethAddress"></span></strong></li>
+									<li>Current address: <span class="bold" data-bind="text: ethAddress"></span></li>
 								</ul>
 							</p>
 							<p><span style="color: #1a6699"><i class="fas fa-cube fa-2x"></i></span> <span>IPFS</span>
 								<ul>
-									<li>Connected: <span data-bind="text: ipfsStatus"></span></li>
+									<li>Connection: <span class="bold" data-bind="text: ipfsStatus"></span></li>
 								</ul>
 							</p>
 						</div>
 						<div>
-							<button id="refresh" type="button" class="btn btn-primary float-right" disabled>Refresh</button>
+							<button id="refresh" type="button" class="btn btn-primary float-right" data-bind="click: refreshStatus">Refresh</button>
 						</div>
 					</div>
 				</div>
@@ -80,11 +127,26 @@
 					<div class="row mt-3">
 						<div class="col-md">
 							<p>
-								All the settings are local to your current browser. No remote servers were harmed in the storing of these settings.
+								All the settings are saved locally inside your current browser. No remote servers were harmed in the storing of these settings.
 							</p>
+							<form>
+								<div class="form-row">
+									<div class="form-group col-md-6">
+										<label for="exampleInputEmail1">IPFS API</label>
+										<input type="email" class="form-control" id="exampleInputEmail1" data-bind="value: ipfsDaemonAddr" aria-describedby="emailHelp">
+										<small id="emailHelp" class="form-text text-muted">Use <a target="_blank" href="https://github.com/multiformats/multiaddr">multiaddr</a> format</small>
+									</div>
+									<!--
+									<div class="form-group col-md-6">
+										<label for="inputPassword4">Password</label>
+										<input type="password" class="form-control" id="inputPassword4">
+									</div>
+									-->
+								</div>
+							</form>
 						</div>
 						<div>
-							<button id="save" type="button" class="btn btn-primary float-right" disabled>Save</button>
+							<button id="save" type="button" class="btn btn-primary float-right" data-bind="click: saveSettings">Save</button>
 						</div>
 					</div>
 				</div>
@@ -101,9 +163,9 @@
 
 	<footer class="footer">
 		<div class="container">
-			<span class="text-muted">Created with <span style="color: #c00921"><i class="fas fa-heart"></i></span> by <a href="https://github.com/neurone">Giuseppe Bertone</a>.</span>
+			<span class="text-muted">Created with <span style="color: #c00921"><i class="fas fa-heart"></i></span> by <a href="https://github.com/neurone">Giuseppe Bertone</a></span>
 		</div>
 	</footer>
-<script type="text/javascript" src="vendors~main.bundle.js"></script><script type="text/javascript" src="main.bundle.js"></script></body>
+<script type="text/javascript" src="vendors~main.08d60df0857e08fea343.bundle.js"></script><script type="text/javascript" src="main.fe0762aafb481fbf93a9.bundle.js"></script></body>
 
 </html>

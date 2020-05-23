@@ -221,7 +221,7 @@ function Message(operation, cid, tx) {
 	self.networkID = tx.chainId;
 	self.transactionHash = tx.hash;
 	let etherscanPrefix = getEtherscanPrefixBy(self.networkID);
-	self.transactionHashLink = `<a href='https://${etherscanPrefix}etherscan.io/tx/` + tx.hash + "'>" + tx.hash.substring(0, 10) + "..." + "</a>";
+	self.transactionHashLink = `<a target='blank' href='https://${etherscanPrefix}etherscan.io/tx/` + tx.hash + "'>" + tx.hash.substring(0, 10) + "..." + "</a>";
 	self.nonce = tx.nonce;
 	self.blockNumber = ko.observable(tx.blockNumber);
 	self.blockNumberComputed = ko.computed(function () {

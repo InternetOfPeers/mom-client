@@ -4,11 +4,13 @@ const log = require("loglevel");
 
 const SimpleMDE = require("simplemde");
 
+const __editorStorageID = "MOM_EDITOR";
+
 const EditorDefaultOptions = {
 	autofocus: true,
 	autosave: {
 		enabled: true,
-		uniqueId: "MOM_ID",
+		uniqueId: __editorStorageID,
 		delay: 1000,
 	},
 	element: $("#currentMessage")[0],

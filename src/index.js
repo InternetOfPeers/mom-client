@@ -8,7 +8,7 @@ const hash = require("hash.js");
 const multihashes = require("multihashes");
 const $ = require("jquery");
 const Editor = require("./editor");
-const MOM = require("./mom");
+const mom = require("./mom");
 
 require("bootstrap");
 
@@ -20,7 +20,9 @@ const __online = "online";
 const __offline = "offline";
 const __unknown = "unknown";
 const __na = "not available";
-const __pending = "pending";
+const __pendingSpinner = "<div class='text-center'><div class='spinner-border spinner-border-sm text-primary' role='status'><span class='sr-only'>Loading...</span></div></div>";
+
+const __messageListStorageID = "MOM_MESSAGE_LIST";
 
 // Settings
 const IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
@@ -38,22 +40,6 @@ let ipfsRefreshing = false;
 // Ethereum
 let provider;
 
-/**
- *
- * @param {*} transactionHash
- * @param {*} blockNumber
- * @param {*} operation
- * @param {*} cid
- */
-function Message(transactionHash, blockNumber, operation, cid) {
-	let self = this;
-	self.transactionHash = transactionHash;
-	self.transactionHashLink = "<a href='https://etherscan.io/tx/" + transactionHash + "'>" + transactionHash.substring(0, 10) + "..." + "</a>";
-	self.blockNumber = ko.observable(blockNumber);
-	self.operation = ko.observable(operation);
-	self.cid = cid;
-}
-
 // Default model
 function defaultViewModel() {
 	var self = this;
@@ -68,7 +54,13 @@ function defaultViewModel() {
 	self.canSign = ko.pureComputed(function () {
 		return self.canPublish() && (self.ethStatus() == __online);
 	});
+	//self.messageList = ko.observableArray(JSON.parse(localStorage.getItem(__messageListStorageID)));
 	self.messageList = ko.observableArray([]);
+	self.messageListSorted = ko.pureComputed(function () {
+		return self.messageList.sorted(function (left, right) {
+			return right.nonce - left.nonce;
+		});
+	});
 	self.ipfsStatus = ko.observable(__offline);
 	self.lastCID = ko.observable(__na);
 	self.canPublish = ko.computed(function () {
@@ -133,25 +125,59 @@ let successfulPublishing = function (cid) {
 	$("#myModal").modal("show");
 };
 
+
+/**
+ *
+ * @param {string} transactionHash
+ * @param {number} nonce
+ * @param {number} blockNumber
+ * @param {string} operation
+ * @param {string} cid
+ */
+function Message(operation, cid, tx) {
+	let self = this;
+	self.transactionHash = tx.hash;
+	self.transactionHashLink = "<a href='https://etherscan.io/tx/" + tx.hash + "'>" + tx.hash.substring(0, 10) + "..." + "</a>";
+	self.networkID = tx.networkID;
+	self.nonce = tx.nonce;
+	self.blockNumber = ko.observable(tx.blockNumber);
+	self.blockNumberComputed = ko.computed(function () {
+		return (self.blockNumber() == null) ? __pendingSpinner : self.blockNumber();
+	});
+	self.operation = ko.observable(operation);
+	self.operationComputed = ko.computed(function () {
+		/*eslint indent: [2, "tab", {"SwitchCase": 1}]*/
+		switch (self.operation()) {
+			case 0:
+				return "Add";
+			default:
+				self.operationComputed = __na;
+		}
+	});
+	self.cid = cid;
+}
+
 /**
  * Send a "MOM add" transaction
  * @param {string} digest
  */
 let addMessage = function (multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
-	let request = { to: model.ethAddress(), value: 0, data: MOM.encodeAddMessage(multihash) };
+	let request = { to: model.ethAddress(), value: 0, data: mom.encodeAddMessage(multihash) };
 	let promise = provider.getSigner().sendTransaction(request);
 	promise.then(tx => {
 		log.debug("Signed transaction", tx.hash);
 		let cid = model.lastCID;
-		model.messageList.push(new Message(tx.hash, __pending, "Add", cid));
+		model.messageList.push(new Message(mom.operations.ADD, cid, tx));
 		provider.once(tx.hash, (receipt) => {
 			log.debug("Mined transaction", receipt.transactionHash);
-			log.debug(receipt.blockNumber);
 			log.debug(receipt);
-			// Update results
-			let element = model.messageList().find(msg => (msg.transactionHash == receipt.transactionHash));
-			element.blockNumber(receipt.blockNumber);
+			// Update transaction status
+			model.messageList()
+				.find(msg => (msg.transactionHash == receipt.transactionHash))
+				.blockNumber(receipt.blockNumber);
+			// save message list in the local storage
+			localStorage.setItem(__messageListStorageID, ko.toJSON(model));
 		});
 	}).catch(error => log.debug("Error while signing transaction", error));
 };
@@ -180,6 +206,9 @@ let refreshIPFSStatus = async function (ms = 5000) {
 };
 
 window.addEventListener("load", async () => {
+	// Init storage
+	if (!localStorage.getItem(__messageListStorageID))
+		localStorage.setItem(__messageListStorageID, JSON.stringify([]));
 	// Start refresh loop for IPFS daemon status
 	refreshIPFSStatus();
 	// Check Ethereum
@@ -234,8 +263,6 @@ window.addEventListener("load", async () => {
 		log.info(__legacyBrowserWarning);
 	}
 });
-
-
 
 
 /*
@@ -304,3 +331,6 @@ log.debug(multihash.fromB58String(model.lastCID).equals(model.lastEncodedMultiha
 
 
 //essageList.find(el => (el.cid == "qmsdasa"))["cid"]="ciao"
+
+
+

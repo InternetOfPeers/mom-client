@@ -10,6 +10,7 @@
 
 <body>
 	<header></header>
+
 	<main role="main" class="container">
 		<!-- Modal -->
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalTitle" aria-hidden="true">
@@ -73,7 +74,8 @@
 							<table class="table table-striped">
 								<thead>
 									<tr>
-										<th>Operation</th>
+										<th>Actions</th>
+										<th>Type</th>
 										<th>Nonce</th>
 										<th>CID</th>
 										<th>Block</th>
@@ -82,6 +84,7 @@
 								</thead>
 								<tbody data-bind="foreach: messageListSorted">
 									<tr>
+										<td>update; reply; delete</td>
 										<td data-bind="text: operationComputed"></td>
 										<td data-bind="text: nonce"></td>
 										<td data-bind="text: cid"></td>
@@ -126,9 +129,24 @@
 							<p>
 								All the settings are saved locally inside your current browser. No remote servers were harmed in the storing of these settings.
 							</p>
+							<form>
+								<div class="form-row">
+									<div class="form-group col-md-6">
+										<label for="exampleInputEmail1">IPFS API</label>
+										<input type="email" class="form-control" id="exampleInputEmail1" data-bind="value: ipfsDaemonAddr" aria-describedby="emailHelp">
+										<small id="emailHelp" class="form-text text-muted">Use <a target="_blank" href="https://github.com/multiformats/multiaddr">multiaddr</a> format</small>
+									</div>
+									<!--
+									<div class="form-group col-md-6">
+										<label for="inputPassword4">Password</label>
+										<input type="password" class="form-control" id="inputPassword4">
+									</div>
+									-->
+								</div>
+							</form>
 						</div>
 						<div>
-							<button id="save" type="button" class="btn btn-primary float-right" disabled>Save</button>
+							<button id="save" type="button" class="btn btn-primary float-right" data-bind="click: saveSettings">Save</button>
 						</div>
 					</div>
 				</div>

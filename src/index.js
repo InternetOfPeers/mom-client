@@ -20,12 +20,13 @@ const __online = "online";
 const __offline = "offline";
 const __unknown = "unknown";
 const __na = "not available";
-const __pendingSpinner = "<div class='text-center'><div class='spinner-border spinner-border-sm text-primary' role='status'><span class='sr-only'>Loading...</span></div></div>";
+const __pendingSpinner = "<div class='spinner-border spinner-border-sm text-primary' role='status'><span class='sr-only'>Loading...</span></div>";
 
 const __messageListStorageID = "MOM_MESSAGE_LIST";
+const __settingsStorageID = "MOM_SETTINGS";
 
-// Settings
-const IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
+// Default settings
+const DEFAULT_IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
 
 // Init the editor
 const editor = new Editor();
@@ -33,12 +34,49 @@ editor.init();
 // set sanitize option to ignore html input
 marked.setOptions({ sanitize: true });
 
-// Init IPFS
-let ipfs = ipfsClient(IPFS_DAEMON_MULTIADDR);
-let ipfsRefreshing = false;
-
 // Ethereum
 let provider;
+
+// Init storage
+/**
+ *
+ */
+let initStorage = function () {
+	if (!localStorage.getItem(__messageListStorageID))
+		localStorage.setItem(__messageListStorageID, JSON.stringify([]));
+
+	if (!localStorage.getItem(__settingsStorageID)) {
+		localStorage.setItem(__settingsStorageID, JSON.stringify({
+			ipfsDaemonAddr: DEFAULT_IPFS_DAEMON_MULTIADDR
+		}));
+	}
+};
+initStorage();
+
+/**
+ *
+ */
+let getSavedMessageList = function () {
+	log.debug(JSON.parse(localStorage.getItem(__messageListStorageID)));
+	let messageList = JSON.parse(localStorage.getItem(__messageListStorageID));
+	messageList.filter(message => (message.blockNumber == null)).forEach(message => {
+		message.blockNumber = __na;
+		message.blockNumberComputed = __na;
+	});
+	return messageList;
+};
+
+let getSavedSettings = function () {
+	return JSON.parse(localStorage.getItem(__settingsStorageID));
+};
+
+let saveSettings = function () {
+	let currentSettings = { ipfsDaemonAddr: model.ipfsDaemonAddr() };
+	localStorage.setItem(__settingsStorageID, JSON.stringify(currentSettings));
+	//Reload IPFS
+	ipfs = ipfsClient(model.ipfsDaemonAddr());
+	refreshIPFSStatus(-1);
+};
 
 // Default model
 function defaultViewModel() {
@@ -54,13 +92,13 @@ function defaultViewModel() {
 	self.canSign = ko.pureComputed(function () {
 		return self.canPublish() && (self.ethStatus() == __online);
 	});
-	//self.messageList = ko.observableArray(JSON.parse(localStorage.getItem(__messageListStorageID)));
-	self.messageList = ko.observableArray([]);
+	self.messageList = ko.observableArray(getSavedMessageList());
 	self.messageListSorted = ko.pureComputed(function () {
 		return self.messageList.sorted(function (left, right) {
 			return right.nonce - left.nonce;
 		});
 	});
+	self.ipfsDaemonAddr = ko.observable(getSavedSettings().ipfsDaemonAddr);
 	self.ipfsStatus = ko.observable(__offline);
 	self.lastCID = ko.observable(__na);
 	self.canPublish = ko.computed(function () {
@@ -76,9 +114,16 @@ function defaultViewModel() {
 	self.addMessage = function () {
 		addMessage(multihashes.fromB58String(self.lastCID), provider);
 	};
+	self.saveSettings = function () {
+		saveSettings();
+	};
 }
 const model = new defaultViewModel();
 ko.applyBindings(model);
+
+// Init IPFS
+let ipfs = ipfsClient(model.ipfsDaemonAddr());
+let ipfsRefreshing = false;
 
 /**
  * Store raw message to IPFS and save the multihash to Ethereum
@@ -126,6 +171,43 @@ let successfulPublishing = function (cid) {
 };
 
 
+let getNetworkNameBy = function (networkID) {
+	switch (networkID) {
+		case 1:
+			return "homestead";
+		case 2:
+			return "morden";
+		case 3:
+			return "ropsten";
+		case 4:
+			return "rinkeby";
+		case 5:
+			return "goerli";
+		case 42:
+			return "kovan";
+		case 61:
+			return "classic";
+		case 62:
+			return "classicTestnet";
+		default:
+			return "";
+	}
+};
+
+/**
+ *
+ * @param {number} networkID
+ */
+let getEtherscanPrefixBy = function (networkID) {
+	let networkName = getNetworkNameBy(networkID);
+	return (
+		networkName == "homestead" ||
+		networkName == "morden" ||
+		networkName == "classic" ||
+		networkName == "classicTestnet" ||
+		networkName == "") ? "" : networkName + ".";
+};
+
 /**
  *
  * @param {string} transactionHash
@@ -136,9 +218,10 @@ let successfulPublishing = function (cid) {
  */
 function Message(operation, cid, tx) {
 	let self = this;
+	self.networkID = tx.chainId;
 	self.transactionHash = tx.hash;
-	self.transactionHashLink = "<a href='https://etherscan.io/tx/" + tx.hash + "'>" + tx.hash.substring(0, 10) + "..." + "</a>";
-	self.networkID = tx.networkID;
+	let etherscanPrefix = getEtherscanPrefixBy(self.networkID);
+	self.transactionHashLink = `<a href='https://${etherscanPrefix}etherscan.io/tx/` + tx.hash + "'>" + tx.hash.substring(0, 10) + "..." + "</a>";
 	self.nonce = tx.nonce;
 	self.blockNumber = ko.observable(tx.blockNumber);
 	self.blockNumberComputed = ko.computed(function () {
@@ -169,6 +252,8 @@ let addMessage = function (multihash, provider) {
 		log.debug("Signed transaction", tx.hash);
 		let cid = model.lastCID;
 		model.messageList.push(new Message(mom.operations.ADD, cid, tx));
+		// save message list in the local storage
+		localStorage.setItem(__messageListStorageID, JSON.stringify(ko.toJS(model).messageList));
 		provider.once(tx.hash, (receipt) => {
 			log.debug("Mined transaction", receipt.transactionHash);
 			log.debug(receipt);
@@ -177,7 +262,7 @@ let addMessage = function (multihash, provider) {
 				.find(msg => (msg.transactionHash == receipt.transactionHash))
 				.blockNumber(receipt.blockNumber);
 			// save message list in the local storage
-			localStorage.setItem(__messageListStorageID, ko.toJSON(model));
+			localStorage.setItem(__messageListStorageID, JSON.stringify(ko.toJS(model).messageList));
 		});
 	}).catch(error => log.debug("Error while signing transaction", error));
 };
@@ -206,9 +291,6 @@ let refreshIPFSStatus = async function (ms = 5000) {
 };
 
 window.addEventListener("load", async () => {
-	// Init storage
-	if (!localStorage.getItem(__messageListStorageID))
-		localStorage.setItem(__messageListStorageID, JSON.stringify([]));
 	// Start refresh loop for IPFS daemon status
 	refreshIPFSStatus();
 	// Check Ethereum
@@ -264,25 +346,7 @@ window.addEventListener("load", async () => {
 	}
 });
 
-
 /*
-
-Transaction Request
-{
-    // Required unless deploying a contract (in which case omit)
-    to: addressOrName,  // the target address or ENS name
-
-    // These are optional/meaningless for call and estimateGas
-    nonce: 0,           // the transaction nonce
-    gasLimit: 0,        // the maximum gas this transaction may spend
-    gasPrice: 0,        // the price (in wei) per unit of gas
-
-    // These are always optional (but for call, data is usually specified)
-    data: "0x",         // extra data for the transaction, or input for call
-    value: 0,           // the amount (in wei) this transaction is sending
-    chainId: 3          // the network ID; usually added by a signer
-}
-
 Transaction Response
 {
     // Only available for mined transactions
@@ -322,15 +386,4 @@ Transaction Response
            "24305c7c9b20db0f8531b015066725e4bb31de6"
 }
 */
-
-/*
-log.debug(multihash.fromB58String(model.lastCID));
-log.debug(multihash.fromB58String(model.lastCID).equals(model.lastEncodedMultihash));
-*/
-
-
-
-//essageList.find(el => (el.cid == "qmsdasa"))["cid"]="ciao"
-
-
 

@@ -8,7 +8,6 @@ module.exports = {
 		"./src/assets/css/editor.css",
 		"./src/assets/css/sticky-footer-navbar.css",
 		"./src/config.common.js",
-		"./src/editor.js",
 		"./src/index.js"
 	],
 	plugins: [

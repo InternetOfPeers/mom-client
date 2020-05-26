@@ -42,3 +42,8 @@ code {
 .bold {
 	font-weight: bold;
 }
+
+button.mom {
+	padding-left: 2pt;
+	padding-right: 2pt;
+}

@@ -7,8 +7,8 @@ const ipfsClient = require("ipfs-http-client");
 const hash = require("hash.js");
 const multihashes = require("multihashes");
 const $ = require("jquery");
-const Editor = require("./editor");
 const mom = require("./mom");
+const SimpleMDE = require("simplemde");
 
 require("bootstrap");
 
@@ -28,18 +28,43 @@ const __settingsStorageID = "MOM_SETTINGS";
 // Default settings
 const DEFAULT_IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
 
-// Init the editor
-const editor = new Editor();
-editor.init();
+// Init the editors
+const newMessageEditorOptions = {
+	autofocus: true,
+	autosave: {
+		enabled: true,
+		uniqueId: "MOM_NEW_MESSAGE_EDITOR_ID",
+		delay: 1000,
+	},
+	element: $("#currentMessage")[0],
+	//hideIcons: ["fullscreen"],
+	placeholder: "Write your MOM...",
+	spellChecker: false,
+	status: ["autosave", "lines", "words", "cursor"]
+};
+const newMessageEditor = new SimpleMDE(newMessageEditorOptions);
+
+const editMessageEditorOptions = {
+	autofocus: true,
+	autosave: {
+		enabled: true,
+		uniqueId: "MOM_EDIT_MESSAGE_EDITOR_ID",
+		delay: 1000,
+	},
+	element: $("#messageToUpdate")[0],
+	spellChecker: false,
+	status: ["autosave", "lines", "words", "cursor"]
+};
+const editMessageEditor = new SimpleMDE(editMessageEditorOptions);
+
 // set sanitize option to ignore html input
 marked.setOptions({ sanitize: true });
 
 // Ethereum
 let provider;
 
-// Init storage
 /**
- *
+ * Init storage
  */
 let initStorage = function () {
 	if (!localStorage.getItem(__messageListStorageID))
@@ -78,6 +103,26 @@ let saveSettings = function () {
 	refreshIPFSStatus(-1);
 };
 
+let editMessage = async function (cid) {
+	await ipfs.block.get(cid).then(function (block) {
+		model.lastEditCID(cid);
+		editMessageEditor.value(block.data.toString());
+		$("#edit-message-tab").tab("show");
+		setTimeout(refreshEditor, 150);	// Hack, but it seems to work
+	});
+};
+
+let fetchMessage = async function (cid) {
+	await ipfs.block.get(cid).then(function (block) {
+		editMessageEditor.value(block.data.toString());
+		setTimeout(refreshEditor, 150);	// Hack, but it seems to work
+	});
+};
+
+let refreshEditor = function () {
+	editMessageEditor.value(editMessageEditor.value());
+};
+
 // Default model
 function defaultViewModel() {
 	var self = this;
@@ -100,7 +145,8 @@ function defaultViewModel() {
 	});
 	self.ipfsDaemonAddr = ko.observable(getSavedSettings().ipfsDaemonAddr);
 	self.ipfsStatus = ko.observable(__offline);
-	self.lastCID = ko.observable(__na);
+	self.lastPublishedCID = ko.observable(__na);
+	self.lastEditCID = ko.observable(__na);
 	self.canPublish = ko.computed(function () {
 		return self.ipfsStatus() == __online;
 	});
@@ -109,13 +155,31 @@ function defaultViewModel() {
 		refreshIPFSStatus(-1);
 	};
 	self.publish = function () {
-		publishToIPFS(editor.value(), ipfs);
+		publishToIPFS(newMessageEditor.value(), ipfs);
 	};
 	self.addMessage = function () {
-		addMessage(multihashes.fromB58String(self.lastCID), provider);
+		addMessage(multihashes.fromB58String(self.lastPublishedCID()), provider);
 	};
 	self.saveSettings = function () {
 		saveSettings();
+	};
+	self.edit = function (message) {
+		editMessage(message.cid);
+	};
+	self.fetch = function () {
+		fetchMessage(self.lastEditCID());
+	};
+	self.publishUpdate = function (message) {
+		//
+		log.debug(message);
+	};
+	self.comment = function (message) {
+		// TODO
+		log.debug(message);
+	};
+	self.delete = function (message) {
+		// TODO
+		log.debug(message);
 	};
 }
 const model = new defaultViewModel();
@@ -143,8 +207,8 @@ let publishToIPFS = async function (message = "", ipfs) {
 		let encodedMultihash = multihashes.encode(digest, "sha2-256");
 		log.debug("decodedMultihash", multihashes.decode(encodedMultihash));
 		assert(block.data.equals(buffer) && block.cid.multihash.equals(encodedMultihash));
-		model.lastCID = block.cid.toString();
-		successfulPublishing(model.lastCID);
+		model.lastPublishedCID(block.cid.toString());
+		successfulPublishing(model.lastPublishedCID());
 	}).catch(function (error) {
 		log.error("Error saving message to IPFS", error);
 	});
@@ -345,6 +409,8 @@ window.addEventListener("load", async () => {
 		log.info(__legacyBrowserWarning);
 	}
 });
+
+
 
 /*
 Transaction Response

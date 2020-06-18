@@ -1,6 +1,6 @@
 # MOM
 
-MOM (My Own Messages) is a ÐApp to share and notarize messages with Ethereum and IPFS. You can give voice to your smart contract, send messages to the world, create a certified blog with your ideas, and so on.
+MOM (My Own Messages) client is a ÐApp to share and notarize messages with Ethereum and IPFS using the MOM standard. You can give voice to your smart contract, send messages to the world, create a certified blog with your ideas, and so on.
 
 ## How to use MOM
 
@@ -52,7 +52,7 @@ I don't like to use smart contract if they are not needed. And I want to spend l
 | FE	   | Any | Custom MOM specifications
 | FF	   | Any | Raw content, no need to disclose the meaning. General client can ignore it.
 
-DELETE command? Yeah, it's like: I changed my mind so please ÐApps don't show this anymore, unless expressly asked by the user of course, and if the content is still available, of course.
+**DELETE** command? Yeah, it's like: I changed my mind so please ÐApps don't show this anymore, unless expressly asked by the user of course, and if the content is still available, of course.
 
 Why [multihash](https://github.com/multiformats/multihash)? Because it is flexible, future-proof and there are already a tons of library supporting it.
 
@@ -78,7 +78,7 @@ $ npm start
 https://help.github.com/en/articles/dealing-with-line-endings
 
 ## VSCode plugins
-I develop with VSCode and in particular these plugins are used:
+I develop with VSCode and in particular these plugins are used that affect source code formatting:
 - Beautify ([hookyqr.beautify](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify))
 - ESLint ([dbaeumer.vscode-eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint))
 - EditorConfig for VS Code ([editorconfig.editorconfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig))

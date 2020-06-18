@@ -66,7 +66,7 @@ let provider;
 /**
  * Init storage
  */
-let initStorage = function () {
+let initStorage = function() {
 	if (!localStorage.getItem(__messageListStorageID))
 		localStorage.setItem(__messageListStorageID, JSON.stringify([]));
 
@@ -81,7 +81,7 @@ initStorage();
 /**
  *
  */
-let getSavedMessageList = function () {
+let getSavedMessageList = function() {
 	log.debug(JSON.parse(localStorage.getItem(__messageListStorageID)));
 	let messageList = JSON.parse(localStorage.getItem(__messageListStorageID));
 	messageList.filter(message => (message.blockNumber == null)).forEach(message => {
@@ -91,11 +91,11 @@ let getSavedMessageList = function () {
 	return messageList;
 };
 
-let getSavedSettings = function () {
+let getSavedSettings = function() {
 	return JSON.parse(localStorage.getItem(__settingsStorageID));
 };
 
-let saveSettings = function () {
+let saveSettings = function() {
 	let currentSettings = { ipfsDaemonAddr: model.ipfsDaemonAddr() };
 	localStorage.setItem(__settingsStorageID, JSON.stringify(currentSettings));
 	//Reload IPFS
@@ -103,23 +103,23 @@ let saveSettings = function () {
 	refreshIPFSStatus(-1);
 };
 
-let editMessage = async function (cid) {
-	await ipfs.block.get(cid).then(function (block) {
+let editMessage = async function(cid) {
+	await ipfs.block.get(cid).then(function(block) {
 		model.lastEditCID(cid);
 		editMessageEditor.value(block.data.toString());
 		$("#edit-message-tab").tab("show");
-		setTimeout(refreshEditor, 150);	// Hack, but it seems to work
+		setTimeout(refreshEditor, 150); // Hack, but it seems to work
 	});
 };
 
-let fetchMessage = async function (cid) {
-	await ipfs.block.get(cid).then(function (block) {
+let fetchMessage = async function(cid) {
+	await ipfs.block.get(cid).then(function(block) {
 		editMessageEditor.value(block.data.toString());
-		setTimeout(refreshEditor, 150);	// Hack, but it seems to work
+		setTimeout(refreshEditor, 150); // Hack, but it seems to work
 	});
 };
 
-let refreshEditor = function () {
+let refreshEditor = function() {
 	editMessageEditor.value(editMessageEditor.value());
 };
 
@@ -131,15 +131,16 @@ function defaultViewModel() {
 	self.ethNetworkName = ko.observable(__unknown);
 	self.ethBlockNumber = ko.observable(0);
 	self.ethAddress = ko.observable(__lockedAccount);
-	self.ethStatus = ko.pureComputed(function () {
+	self.ethStatus = ko.pureComputed(function() {
 		return (self.ethBlockNumber() > 0 && self.ethNetworkID() > 0) ? __online : __offline;
 	});
-	self.canSign = ko.pureComputed(function () {
+	self.canSign = ko.pureComputed(function() {
 		return self.canPublish() && (self.ethStatus() == __online);
 	});
+	self.canUpdate = ko.observable(false);
 	self.messageList = ko.observableArray(getSavedMessageList());
-	self.messageListSorted = ko.pureComputed(function () {
-		return self.messageList.sorted(function (left, right) {
+	self.messageListSorted = ko.pureComputed(function() {
+		return self.messageList.sorted(function(left, right) {
 			return right.nonce - left.nonce;
 		});
 	});
@@ -147,37 +148,39 @@ function defaultViewModel() {
 	self.ipfsStatus = ko.observable(__offline);
 	self.lastPublishedCID = ko.observable(__na);
 	self.lastEditCID = ko.observable(__na);
-	self.canPublish = ko.computed(function () {
+	self.canPublish = ko.computed(function() {
 		return self.ipfsStatus() == __online;
 	});
 	// Functions
-	self.refreshStatus = function () {
+	self.refreshStatus = function() {
 		refreshIPFSStatus(-1);
 	};
-	self.publish = function () {
-		publishToIPFS(newMessageEditor.value(), ipfs);
+	self.publish = function() {
+		publishToIPFS(newMessageEditor.value(), ipfs, successfulPublish);
 	};
-	self.addMessage = function () {
+	self.addMessage = function() {
 		addMessage(multihashes.fromB58String(self.lastPublishedCID()), provider);
 	};
-	self.saveSettings = function () {
+	self.updateMessage = function() {
+		updateMessage(multihashes.fromB58String(self.lastEditCID()), multihashes.fromB58String(self.lastPublishedCID()), provider);
+	};
+	self.saveSettings = function() {
 		saveSettings();
 	};
-	self.edit = function (message) {
+	self.edit = function(message) {
 		editMessage(message.cid);
 	};
-	self.fetch = function () {
+	self.fetch = function() {
 		fetchMessage(self.lastEditCID());
 	};
-	self.publishUpdate = function (message) {
-		//
-		log.debug(message);
+	self.publishUpdate = function() {
+		publishToIPFS(editMessageEditor.value(), ipfs, successfulUpdate);
 	};
-	self.comment = function (message) {
+	self.comment = function(message) {
 		// TODO
 		log.debug(message);
 	};
-	self.delete = function (message) {
+	self.delete = function(message) {
 		// TODO
 		log.debug(message);
 	};
@@ -195,21 +198,21 @@ let ipfsRefreshing = false;
  * @param {string} message
  * @param {Object} ipfs
  */
-let publishToIPFS = async function (message = "", ipfs) {
+let publishToIPFS = async function(message = "", ipfs, callback) {
 	if (!model.canPublish()) return showNotReady();
 	// Even if IPFS encodes CID in multihash it uses always sha3-256 algorithm, so we store that value inside Ethereum.
 	// This is not mandatory and the same content can be represented in different formats on different storage system.
 	// The "truth" to check against remains what's inside Ethereum transactions.
 	let buffer = Buffer.from(message);
-	await ipfs.block.put(buffer).then(async function (block) {
+	await ipfs.block.put(buffer).then(async function(block) {
 		// Do some sanity check
 		let digest = Buffer.from(hash.sha256().update(message).digest());
 		let encodedMultihash = multihashes.encode(digest, "sha2-256");
 		log.debug("decodedMultihash", multihashes.decode(encodedMultihash));
 		assert(block.data.equals(buffer) && block.cid.multihash.equals(encodedMultihash));
 		model.lastPublishedCID(block.cid.toString());
-		successfulPublishing(model.lastPublishedCID());
-	}).catch(function (error) {
+		callback(model.lastPublishedCID(), model.lastEditCID());
+	}).catch(function(error) {
 		log.error("Error saving message to IPFS", error);
 	});
 };
@@ -217,7 +220,7 @@ let publishToIPFS = async function (message = "", ipfs) {
 /**
  * Show a message to the user
  */
-let showNotReady = function () {
+let showNotReady = function() {
 	$("#myModalTitle").text("Cannot publish to IPFS");
 	$("#myModalMessage").text("You are not connected to any IPFS node. Please check Status and Settings pages.");
 	$("#myModal").modal("show");
@@ -228,14 +231,34 @@ let showNotReady = function () {
  * Show a message to the user
  * @param {string} cid
  */
-let successfulPublishing = function (cid) {
+let successfulPublish = function(cid) {
 	$("#myModalTitle").text("Success");
 	$("#myModalMessage").text("Message published to IPFS with CID: " + cid);
 	$("#myModal").modal("show");
 };
 
+/**
+ * Show a message to the user
+ * @param {string} cid
+ */
+let successfulUpdate = function(updatedCID, originalCID) {
+	if (updatedCID != originalCID) {
+		model.canUpdate(true);
+		$("#myModalUpdateTitle").text("Success");
+		$("#myModalUpdateTitle").removeClass("text-warning");
+		$("#myModalUpdateTitle").addClass("text-primary");
+		$("#myModalUpdateMessage").text("Updated message published to IPFS with CID: " + updatedCID);
+	} else {
+		model.canUpdate(false);
+		$("#myModalUpdateTitle").text("Warning");
+		$("#myModalUpdateTitle").removeClass("text-primary");
+		$("#myModalUpdateTitle").addClass("text-warning");
+		$("#myModalUpdateMessage").text("Updated message is identical to the old one! CID: " + updatedCID);
+	}
+	$("#myModalUpdate").modal("show");
+};
 
-let getNetworkNameBy = function (networkID) {
+let getNetworkNameBy = function(networkID) {
 	switch (networkID) {
 		case 1:
 			return "homestead";
@@ -262,7 +285,7 @@ let getNetworkNameBy = function (networkID) {
  *
  * @param {number} networkID
  */
-let getEtherscanPrefixBy = function (networkID) {
+let getEtherscanPrefixBy = function(networkID) {
 	let networkName = getNetworkNameBy(networkID);
 	return (
 		networkName == "homestead" ||
@@ -274,29 +297,33 @@ let getEtherscanPrefixBy = function (networkID) {
 
 /**
  *
- * @param {string} transactionHash
- * @param {number} nonce
- * @param {number} blockNumber
  * @param {string} operation
  * @param {string} cid
+ * @param {object} tx
  */
 function Message(operation, cid, tx) {
 	let self = this;
 	self.networkID = tx.chainId;
 	self.transactionHash = tx.hash;
 	let etherscanPrefix = getEtherscanPrefixBy(self.networkID);
-	self.transactionHashLink = `<a target='blank' href='https://${etherscanPrefix}etherscan.io/tx/` + tx.hash + "'>" + tx.hash.substring(0, 10) + "..." + "</a>";
+	self.transactionHashLink = `<a target='_blank' href='https://${etherscanPrefix}etherscan.io/tx/` + tx.hash + "'>" + tx.hash.substring(0, 10) + "..." + "</a>";
 	self.nonce = tx.nonce;
 	self.blockNumber = ko.observable(tx.blockNumber);
-	self.blockNumberComputed = ko.computed(function () {
+	self.blockNumberComputed = ko.computed(function() {
 		return (self.blockNumber() == null) ? __pendingSpinner : self.blockNumber();
 	});
 	self.operation = ko.observable(operation);
-	self.operationComputed = ko.computed(function () {
+	self.operationComputed = ko.computed(function() {
 		/*eslint indent: [2, "tab", {"SwitchCase": 1}]*/
 		switch (self.operation()) {
 			case 0:
 				return "Add";
+			case 1:
+				return "Update";
+			case 2:
+				return "Delete";
+			case 3:
+				return "Reply";
 			default:
 				self.operationComputed = __na;
 		}
@@ -308,14 +335,36 @@ function Message(operation, cid, tx) {
  * Send a "MOM add" transaction
  * @param {string} digest
  */
-let addMessage = function (multihash, provider) {
+let addMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
-	let request = { to: model.ethAddress(), value: 0, data: mom.encodeAddMessage(multihash) };
-	let promise = provider.getSigner().sendTransaction(request);
+	let addTransacion = mom.createAddTransaction(model.ethAddress(), multihash);
+	sendTransaction(addTransacion, provider);
+};
+
+/**
+ * Send a "MOM update" transaction
+ * @param {string} digest
+ */
+let updateMessage = function(originalMultihash, updatedMultihash, provider) {
+	log.debug("original", originalMultihash.toString("hex"), multihashes.toB58String(originalMultihash));
+	log.debug("updated", updatedMultihash.toString("hex"), multihashes.toB58String(updatedMultihash));
+	let updateTransaction = mom.createUpdateTransaction(model.ethAddress(), originalMultihash, updatedMultihash);
+	sendTransaction(updateTransaction, provider);
+};
+
+/**
+ * Sign and send a MOM transaction
+ * @param {object} transaction
+ * @param {object} provider
+ */
+let sendTransaction = function(transaction, provider) {
+	let promise = provider.getSigner().sendTransaction(transaction);
+	let momOperation = transaction.data[0]; // First byte of the payload
 	promise.then(tx => {
 		log.debug("Signed transaction", tx.hash);
-		let cid = model.lastCID;
-		model.messageList.push(new Message(mom.operations.ADD, cid, tx));
+		assert(tx.from === tx.to, "Signer and receiver must be the same!");
+		let cid = model.lastPublishedCID();
+		model.messageList.push(new Message(momOperation, cid, tx));
 		// save message list in the local storage
 		localStorage.setItem(__messageListStorageID, JSON.stringify(ko.toJS(model).messageList));
 		provider.once(tx.hash, (receipt) => {
@@ -335,7 +384,7 @@ let addMessage = function (multihash, provider) {
  *
  * @param {number} ms
  */
-let refreshIPFSStatus = async function (ms = 5000) {
+let refreshIPFSStatus = async function(ms = 5000) {
 	if (!ipfsRefreshing) {
 		ipfsRefreshing = true;
 		try {
@@ -363,12 +412,12 @@ window.addEventListener("load", async () => {
 			// Request access to the Ethereum wallet
 			await window.ethereum.enable();
 			provider = new ethers.providers.Web3Provider(window.ethereum);
-			provider.listAccounts().then(function (values) {
+			provider.listAccounts().then(function(values) {
 				if (values[0]) model.ethAddress(values[0]);
 				log.debug("Current address:", model.ethAddress());
 			});
 			provider.getBlockNumber().then(model.ethBlockNumber);
-			provider.getNetwork().then(function (network) {
+			provider.getNetwork().then(function(network) {
 				if (network) {
 					model.ethNetworkID(network.chainId);
 					model.ethNetworkName(network.name);
@@ -382,13 +431,13 @@ window.addEventListener("load", async () => {
 				log.debug("New block:", blockNumber);
 				model.ethBlockNumber(blockNumber);
 			});
-			provider._web3Provider.publicConfigStore.on("update", function (event) {
+			provider._web3Provider.publicConfigStore.on("update", function(event) {
 				// Get changes made by user on MetaMask
 				if (event.selectedAddress) model.ethAddress(event.selectedAddress);
 				else if (window.ethereum.isMetaMask) model.ethAddress(__lockedMetaMaskAccount);
 				else model.ethAddress(__lockedAccount);
 				// Get new block number
-				provider.getBlockNumber().then(function (result) {
+				provider.getBlockNumber().then(function(result) {
 					model.ethBlockNumber(result);
 					// Refresh page if network is changed
 					if (model.ethNetworkID() != event.networkVersion) location.reload();
@@ -452,4 +501,3 @@ Transaction Response
            "24305c7c9b20db0f8531b015066725e4bb31de6"
 }
 */
-

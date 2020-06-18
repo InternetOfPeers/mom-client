@@ -12,7 +12,7 @@ module.exports = {
 	],
 	plugins: [
 		new HtmlWebpackPlugin({
-			title: "MOM",
+			title: "MOM client",
 			template: "src/assets/templates/index.html"
 		})
 	],

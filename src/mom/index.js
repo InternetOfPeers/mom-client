@@ -1,22 +1,42 @@
 /**
-* MOM implementation in JavaScript.
-* It does NOT take care signing or sending the transaction to Ethereum,
-* but it creates the correct transaction payload to be sent
-*
-* @module mom
-*/
+ * MOM implementation in JavaScript.
+ * It does NOT take care signing or sending the transaction to Ethereum,
+ * but it creates the correct transaction payload to be sent
+ *
+ * @module mom
+ */
 "use strict";
 
-const multihashes = require("multihashes");
 const cs = require("./constants");
+const multihashes = require("multihashes");
 
-exports.operations = cs.operations;
-
-exports.encodeAddMessage = function encodeAddMessage(multhash) {
+function encodeAddMessage(multihash) {
 	try {
-		multihashes.decode(multhash);
+		multihashes.decode(multihash);
 	} catch (error) {
 		throw new Error(`message is not a valid multihash: ${error}`);
 	}
-	return Buffer.concat([Buffer.from([cs.operations.ADD]), multhash], multhash.length);
+	return Buffer.concat([Buffer.from([cs.operations.ADD]), multihash]);
+}
+
+function encodeUpdateMessage(originalMultihash, updatedMultihash) {
+	try {
+		multihashes.decode(originalMultihash);
+	} catch (error) {
+		throw new Error(`original message is not a valid multihash: ${error}`);
+	}
+	try {
+		multihashes.decode(updatedMultihash);
+	} catch (error) {
+		throw new Error(`updated message is not a valid multihash: ${error}`);
+	}
+	return Buffer.concat([Buffer.from([cs.operations.UPDATE]), originalMultihash, updatedMultihash]);
+}
+
+exports.createAddTransaction = function createAddTransaction(address, multihash) {
+	return { to: address, value: 0, data: encodeAddMessage(multihash) };
+};
+
+exports.createUpdateTransaction = function createUpdateTransaction(address, originalMultihash, updatedMultihash) {
+	return { to: address, value: 0, data: encodeUpdateMessage(originalMultihash, updatedMultihash) };
 };

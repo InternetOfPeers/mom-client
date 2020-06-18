@@ -12,12 +12,12 @@
 	<header></header>
 
 	<main role="main" class="container">
-		<!-- Modal -->
+		<!-- Modals -->
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalTitle" aria-hidden="true">
 			<div class="modal-dialog modal-dialog-centered" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="myModalTitle"></h5>
+						<h5 class="modal-title text-primary" id="myModalTitle"></h5>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
@@ -32,6 +32,25 @@
 				</div>
 			</div>
 		</div>
+		<div class="modal fade" id="myModalUpdate" tabindex="-1" role="dialog" aria-labelledby="myModalUpdateTitle" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title text-primary" id="myModalUpdateTitle"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p id="myModalUpdateMessage"></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" data-bind="visible: canSign && canUpdate, click: updateMessage" data-dismiss="modal">Next: Update message on chain</button>
+					</div>
+				</div>
+			</div>
+		</div>
 		<!-- Content -->
 		<h1 class="">My Own Messages</h1>
 		<p class="lead">Write and read your own certified messages to the permanent web.</p>
@@ -40,11 +59,10 @@
 				<a class="nav-link active" id="new-message-tab" data-toggle="tab" href="#new-message" role="tab" aria-controls="new-message" aria-selected="true">New Message</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" id="edit-message-tab" data-toggle="tab" href="#edit-message" role="tab" aria-controls="edit-message" aria-selected="false">Edit Message</a>
-			</li>
-
-			<li class="nav-item">
 				<a class="nav-link" id="message-list-tab" data-toggle="tab" href="#message-list" role="tab" aria-controls="message-list" aria-selected="false">Message list</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="edit-message-tab" data-toggle="tab" href="#edit-message" role="tab" aria-controls="edit-message" aria-selected="false">Edit Message</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="false">Status</a>
@@ -94,7 +112,7 @@
 						<div>
 							<button id="fetch " type="button" class="btn btn-primary float-right" data-bind="click: fetch">Fetch CID</button>
 							<br /><br />
-							<button id="publish" type="button" class="btn btn-primary float-right" data-bind="click: publishUpdate">Publish</button>
+							<button id="publish" type="button" class="btn btn-primary float-right" data-bind="click: publishUpdate">Publish update</button>
 						</div>
 					</div>
 				</div>
@@ -137,7 +155,8 @@
 				<div class="container-fluid">
 					<div class="row mt-3">
 						<div class="col-md">
-							<p><span style="color: #1a6699"><i class="fab fa-ethereum fa-2x"></i></span> <span>Ethereum</span>
+							<p><span style="color: #1a6699"><i class="fab fa-ethereum fa-2x"></i></span>
+								<span>Ethereum</span>
 								<ul>
 									<li>Connection: <span class="bold" data-bind="text: ethStatus"></span></li>
 									<li>Network ID: <span data-bind="text: ethNetworkID"></span></li>
@@ -163,14 +182,16 @@
 					<div class="row mt-3">
 						<div class="col-md">
 							<p>
-								All the settings are saved locally inside your current browser. No remote servers were harmed in the storing of these settings.
+								All the settings are saved locally inside your current browser. No remote servers were
+								harmed in the storing of these settings.
 							</p>
 							<form>
 								<div class="form-row">
 									<div class="form-group col-md-6">
 										<label for="ipfsDaemonAddr">IPFS API</label>
 										<input type="text" class="form-control" id="ipfsDaemonAddr" data-bind="value: ipfsDaemonAddr" aria-describedby="ipfsDaemonAddress">
-										<small id="ipfsDaemonAddress" class="form-text text-muted">Use <a target="_blank" href="https://github.com/multiformats/multiaddr">multiaddr</a> format</small>
+										<small id="ipfsDaemonAddress" class="form-text text-muted">Use <a target="_blank" href="https://github.com/multiformats/multiaddr">multiaddr</a>
+											format</small>
 									</div>
 								</div>
 							</form>

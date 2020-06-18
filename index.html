@@ -4,7 +4,7 @@
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<title>
-		MOM
+		MOM client
 	</title>
 </head>
 
@@ -12,12 +12,12 @@
 	<header></header>
 
 	<main role="main" class="container">
-		<!-- Modal -->
+		<!-- Modals -->
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalTitle" aria-hidden="true">
 			<div class="modal-dialog modal-dialog-centered" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="myModalTitle"></h5>
+						<h5 class="modal-title text-primary" id="myModalTitle"></h5>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
@@ -28,6 +28,25 @@
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 						<button type="button" class="btn btn-primary" data-bind="visible: canSign, click: addMessage" data-dismiss="modal">Next: Add message on chain</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" id="myModalUpdate" tabindex="-1" role="dialog" aria-labelledby="myModalUpdateTitle" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title text-primary" id="myModalUpdateTitle"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p id="myModalUpdateMessage"></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" data-bind="visible: canSign && canUpdate, click: updateMessage" data-dismiss="modal">Next: Update message on chain</button>
 					</div>
 				</div>
 			</div>
@@ -43,6 +62,9 @@
 				<a class="nav-link" id="message-list-tab" data-toggle="tab" href="#message-list" role="tab" aria-controls="message-list" aria-selected="false">Message list</a>
 			</li>
 			<li class="nav-item">
+				<a class="nav-link" id="edit-message-tab" data-toggle="tab" href="#edit-message" role="tab" aria-controls="edit-message" aria-selected="false">Edit Message</a>
+			</li>
+			<li class="nav-item">
 				<a class="nav-link" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="false">Status</a>
 			</li>
 			<li class="nav-item">
@@ -53,7 +75,7 @@
 			</li>
 		</ul>
 		<div class="tab-content" id="myTabContent">
-			<div class="tab-pane fade show active" id="new-message" role="tabpanel" aria-labelledby="home-tab">
+			<div class="tab-pane fade show active" id="new-message" role="tabpanel" aria-labelledby="new-message-tab">
 				<div class="container-fluid">
 					<div class="row mt-3">
 						<div class="col-md">
@@ -63,6 +85,34 @@
 						</div>
 						<div>
 							<button id="publish" type="button" class="btn btn-primary float-right" data-bind="click: publish">Publish</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane fade" id="edit-message" role="tabpanel" aria-labelledby="edit-message-tab">
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<div class="col-md">
+							<form>
+								<div class="form-row">
+									<div class="form-group col-md-6">
+										<label for="editCID">Previous Message CID</label>
+										<input type="text" class="form-control" id="editCID" data-bind="value: lastEditCID" aria-describedby="editCID">
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+					<div class="row mt-3">
+						<div class="col-md">
+							<p id="messageBoxToUpdate" class="messageBoxToUpdate">
+								<textarea id="messageToUpdate"></textarea>
+							</p>
+						</div>
+						<div>
+							<button id="fetch " type="button" class="btn btn-primary float-right" data-bind="click: fetch">Fetch CID</button>
+							<br /><br />
+							<button id="publish" type="button" class="btn btn-primary float-right" data-bind="click: publishUpdate">Publish update</button>
 						</div>
 					</div>
 				</div>
@@ -84,7 +134,11 @@
 								</thead>
 								<tbody data-bind="foreach: messageListSorted">
 									<tr>
-										<td>update; reply; delete</td>
+										<td>
+											<button class="btn mom" data-bind="click: $parent.edit"><i class="far fa-edit"></i></button>
+											<button class="btn mom" data-bind="click: $parent.comment"><i class="far fa-comment-dots"></i></button>
+											<button class="btn mom" data-bind="click: $parent.delete"><i class="far fa-trash-alt"></i></button>
+										</td>
 										<td data-bind="text: operationComputed"></td>
 										<td data-bind="text: nonce"></td>
 										<td data-bind="text: cid"></td>
@@ -101,7 +155,8 @@
 				<div class="container-fluid">
 					<div class="row mt-3">
 						<div class="col-md">
-							<p><span style="color: #1a6699"><i class="fab fa-ethereum fa-2x"></i></span> <span>Ethereum</span>
+							<p><span style="color: #1a6699"><i class="fab fa-ethereum fa-2x"></i></span>
+								<span>Ethereum</span>
 								<ul>
 									<li>Connection: <span class="bold" data-bind="text: ethStatus"></span></li>
 									<li>Network ID: <span data-bind="text: ethNetworkID"></span></li>
@@ -127,21 +182,17 @@
 					<div class="row mt-3">
 						<div class="col-md">
 							<p>
-								All the settings are saved locally inside your current browser. No remote servers were harmed in the storing of these settings.
+								All the settings are saved locally inside your current browser. No remote servers were
+								harmed in the storing of these settings.
 							</p>
 							<form>
 								<div class="form-row">
 									<div class="form-group col-md-6">
-										<label for="exampleInputEmail1">IPFS API</label>
-										<input type="email" class="form-control" id="exampleInputEmail1" data-bind="value: ipfsDaemonAddr" aria-describedby="emailHelp">
-										<small id="emailHelp" class="form-text text-muted">Use <a target="_blank" href="https://github.com/multiformats/multiaddr">multiaddr</a> format</small>
+										<label for="ipfsDaemonAddr">IPFS API</label>
+										<input type="text" class="form-control" id="ipfsDaemonAddr" data-bind="value: ipfsDaemonAddr" aria-describedby="ipfsDaemonAddress">
+										<small id="ipfsDaemonAddress" class="form-text text-muted">Use <a target="_blank" href="https://github.com/multiformats/multiaddr">multiaddr</a>
+											format</small>
 									</div>
-									<!--
-									<div class="form-group col-md-6">
-										<label for="inputPassword4">Password</label>
-										<input type="password" class="form-control" id="inputPassword4">
-									</div>
-									-->
 								</div>
 							</form>
 						</div>
@@ -166,6 +217,6 @@
 			<span class="text-muted">Created with <span style="color: #c00921"><i class="fas fa-heart"></i></span> by <a href="https://github.com/neurone">Giuseppe Bertone</a></span>
 		</div>
 	</footer>
-<script type="text/javascript" src="vendors~main.08d60df0857e08fea343.bundle.js"></script><script type="text/javascript" src="main.fe0762aafb481fbf93a9.bundle.js"></script></body>
+<script type="text/javascript" src="vendors~main.dabf385548cc4363ddc1.bundle.js"></script><script type="text/javascript" src="main.efa9dbcd0214cbd279a4.bundle.js"></script></body>
 
 </html>

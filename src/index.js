@@ -22,7 +22,7 @@ const __unknown = "unknown";
 const __na = "not available";
 const __pendingSpinner = "<div class='spinner-border spinner-border-sm text-primary' role='status'><span class='sr-only'>Loading...</span></div>";
 
-const __messageListStorageID = "MOM_MESSAGE_LIST";
+const __operationListStorageID = "MOM_OPERATION_LIST";
 const __settingsStorageID = "MOM_SETTINGS";
 
 // Default settings
@@ -33,7 +33,7 @@ const newMessageEditorOptions = {
 	autofocus: true,
 	autosave: {
 		enabled: true,
-		uniqueId: "MOM_NEW_MESSAGE_EDITOR_ID",
+		uniqueId: "MOM_NEW_MESSAGE_EDITOR",
 		delay: 1000,
 	},
 	element: $("#currentMessage")[0],
@@ -48,7 +48,7 @@ const editMessageEditorOptions = {
 	autofocus: true,
 	autosave: {
 		enabled: true,
-		uniqueId: "MOM_EDIT_MESSAGE_EDITOR_ID",
+		uniqueId: "MOM_EDIT_MESSAGE_EDITOR",
 		delay: 1000,
 	},
 	element: $("#messageToUpdate")[0],
@@ -67,8 +67,8 @@ let provider;
  * Init storage
  */
 let initStorage = function() {
-	if (!localStorage.getItem(__messageListStorageID))
-		localStorage.setItem(__messageListStorageID, JSON.stringify([]));
+	if (!localStorage.getItem(__operationListStorageID))
+		localStorage.setItem(__operationListStorageID, JSON.stringify([]));
 
 	if (!localStorage.getItem(__settingsStorageID)) {
 		localStorage.setItem(__settingsStorageID, JSON.stringify({
@@ -81,14 +81,64 @@ initStorage();
 /**
  *
  */
-let getSavedMessageList = function() {
-	log.debug(JSON.parse(localStorage.getItem(__messageListStorageID)));
-	let messageList = JSON.parse(localStorage.getItem(__messageListStorageID));
-	messageList.filter(message => (message.blockNumber == null)).forEach(message => {
+let getSavedOperationList = function() {
+	log.debug("getSavedOperationList", JSON.parse(localStorage.getItem(__operationListStorageID)));
+	let operationList = JSON.parse(localStorage.getItem(__operationListStorageID));
+	operationList.filter(message => (message.blockNumber == null)).forEach(message => {
 		message.blockNumber = __na;
 		message.blockNumberComputed = __na;
 	});
-	return messageList;
+	return operationList;
+};
+
+let updateMessageList = function(changes) {
+	// TODO
+	log.debug("updateMessageList", model.messageList(), changes);
+
+};
+
+let initMessageList = function() {
+	let tempMessageList = [];
+	// Set array in covenient order
+	let operations = model.operationListSorted().sort((left, right) => (left.nonce - right.nonce));
+	operations.forEach(op => {
+		// Apply operations
+		switch (op.operation) {
+			case 0:
+				// add a message
+				op.cid = op.firstCID;
+				tempMessageList[op.firstCID] = op;
+				break;
+			case 1:
+				// replace the old message
+				delete tempMessageList[op.firstCID];
+				op.cid = op.secondCID;
+				tempMessageList[op.secondCID] = op;
+				break;
+			case 2:
+				// add a reply
+				op.cid = op.secondCID;
+				tempMessageList[op.secondCID] = op;
+				break;
+			case 3:
+				// deleta a message
+				delete tempMessageList[op.firstCID];
+				break;
+			default:
+				break;
+		}
+	});
+	log.debug("tempMessageList", tempMessageList);
+	let messageList = [];
+	for (var key in tempMessageList) {
+		// use hasOwnProperty to filter out keys from the Object.prototype
+		if (tempMessageList.hasOwnProperty(key)) {
+			messageList.unshift(tempMessageList[key]);
+		}
+	}
+	model.messageList(messageList);
+	// Restore operations order
+	model.operationListSorted().sort((left, right) => (right.nonce - left.nonce));
 };
 
 let getSavedSettings = function() {
@@ -138,16 +188,23 @@ function defaultViewModel() {
 		return self.canPublish() && (self.ethStatus() == __online);
 	});
 	self.canUpdate = ko.observable(false);
-	self.messageList = ko.observableArray(getSavedMessageList());
-	self.messageListSorted = ko.pureComputed(function() {
-		return self.messageList.sorted(function(left, right) {
+	self.messageList = ko.observableArray([]);
+	self.operationList = ko.observableArray(getSavedOperationList());
+	self.operationListSorted = ko.pureComputed(function() {
+		let operationListSorted = self.operationList.sorted(function(left, right) {
 			return right.nonce - left.nonce;
 		});
+		return ko.utils.arrayFilter(operationListSorted, function(operation) {
+			return (operation.networkID == self.ethNetworkID() && operation.from.toLowerCase() == self.ethAddress().toLowerCase());
+		});
 	});
+	ko.when(function() { return self.operationListSorted().length !== 0; }, initMessageList);
+	self.operationList.subscribe(updateMessageList, null, "arrayChange");
 	self.ipfsDaemonAddr = ko.observable(getSavedSettings().ipfsDaemonAddr);
 	self.ipfsStatus = ko.observable(__offline);
 	self.lastPublishedCID = ko.observable(__na);
 	self.lastEditCID = ko.observable(__na);
+	self.lastDeleteCID = ko.observable(__na);
 	self.canPublish = ko.computed(function() {
 		return self.ipfsStatus() == __online;
 	});
@@ -159,16 +216,22 @@ function defaultViewModel() {
 		publishToIPFS(newMessageEditor.value(), ipfs, successfulPublish);
 	};
 	self.addMessage = function() {
-		addMessage(multihashes.fromB58String(self.lastPublishedCID()), provider);
+		sendAddMessage(multihashes.fromB58String(self.lastPublishedCID()), provider);
 	};
 	self.updateMessage = function() {
-		updateMessage(multihashes.fromB58String(self.lastEditCID()), multihashes.fromB58String(self.lastPublishedCID()), provider);
+		sendUpdateMessage(multihashes.fromB58String(self.lastEditCID()), multihashes.fromB58String(self.lastPublishedCID()), provider);
+	};
+	self.deleteMessage = function() {
+		sendDeleteMessage(multihashes.fromB58String(self.lastDeleteCID()), provider);
 	};
 	self.saveSettings = function() {
 		saveSettings();
 	};
 	self.edit = function(message) {
 		editMessage(message.cid);
+	};
+	self.delete = function(message) {
+		confirmDelete(message.cid);
 	};
 	self.fetch = function() {
 		fetchMessage(self.lastEditCID());
@@ -177,10 +240,6 @@ function defaultViewModel() {
 		publishToIPFS(editMessageEditor.value(), ipfs, successfulUpdate);
 	};
 	self.comment = function(message) {
-		// TODO
-		log.debug(message);
-	};
-	self.delete = function(message) {
 		// TODO
 		log.debug(message);
 	};
@@ -258,6 +317,17 @@ let successfulUpdate = function(updatedCID, originalCID) {
 	$("#myModalUpdate").modal("show");
 };
 
+/**
+ * Show a message to the user
+ * @param {string} cid
+ */
+let confirmDelete = function(cid) {
+	model.lastDeleteCID(cid);
+	$("#myModalDeleteTitle").text("Delete request");
+	$("#myModalDeleteMessage").text("You are sending a DELETE command for the message with CID: " + cid);
+	$("#myModalDelete").modal("show");
+};
+
 let getNetworkNameBy = function(networkID) {
 	switch (networkID) {
 		case 1:
@@ -297,12 +367,15 @@ let getEtherscanPrefixBy = function(networkID) {
 
 /**
  *
- * @param {string} operation
- * @param {string} cid
- * @param {object} tx
+ * @param {*} operation
+ * @param {*} firstCID
+ * @param {*} secondCID
+ * @param {*} tx
  */
-function Message(operation, cid, tx) {
+function Operation(operation, firstCID, secondCID, tx) {
 	let self = this;
+	self.from = tx.from;
+	self.to = tx.to;
 	self.networkID = tx.chainId;
 	self.transactionHash = tx.hash;
 	let etherscanPrefix = getEtherscanPrefixBy(self.networkID);
@@ -321,21 +394,22 @@ function Message(operation, cid, tx) {
 			case 1:
 				return "Update";
 			case 2:
-				return "Delete";
-			case 3:
 				return "Reply";
+			case 3:
+				return "Delete";
 			default:
 				self.operationComputed = __na;
 		}
 	});
-	self.cid = cid;
+	self.firstCID = firstCID;
+	self.secondCID = secondCID;
 }
 
 /**
  * Send a "MOM add" transaction
  * @param {string} digest
  */
-let addMessage = function(multihash, provider) {
+let sendAddMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
 	let addTransacion = mom.createAddTransaction(model.ethAddress(), multihash);
 	sendTransaction(addTransacion, provider);
@@ -345,12 +419,23 @@ let addMessage = function(multihash, provider) {
  * Send a "MOM update" transaction
  * @param {string} digest
  */
-let updateMessage = function(originalMultihash, updatedMultihash, provider) {
+let sendUpdateMessage = function(originalMultihash, updatedMultihash, provider) {
 	log.debug("original", originalMultihash.toString("hex"), multihashes.toB58String(originalMultihash));
 	log.debug("updated", updatedMultihash.toString("hex"), multihashes.toB58String(updatedMultihash));
 	let updateTransaction = mom.createUpdateTransaction(model.ethAddress(), originalMultihash, updatedMultihash);
 	sendTransaction(updateTransaction, provider);
 };
+
+/**
+ * Send a "MOM delete" transaction
+ * @param {string} digest
+ */
+let sendDeleteMessage = function(multihash, provider) {
+	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
+	let deleteTransacion = mom.createDeleteTransaction(model.ethAddress(), multihash);
+	sendTransaction(deleteTransacion, provider);
+};
+
 
 /**
  * Sign and send a MOM transaction
@@ -363,19 +448,33 @@ let sendTransaction = function(transaction, provider) {
 	promise.then(tx => {
 		log.debug("Signed transaction", tx.hash);
 		assert(tx.from === tx.to, "Signer and receiver must be the same!");
-		let cid = model.lastPublishedCID();
-		model.messageList.push(new Message(momOperation, cid, tx));
+		let message = {};
+		switch (momOperation) {
+			case mom.operations.ADD:
+				message = new Operation(momOperation, model.lastPublishedCID(), "", tx);
+				break;
+			case mom.operations.UPDATE:
+			case mom.operations.REPLY:
+				message = new Operation(momOperation, model.lastEditCID(), model.lastPublishedCID(), tx);
+				break;
+			case mom.operations.DELETE:
+				message = new Operation(momOperation, model.lastDeleteCID(), "", tx);
+				break;
+			default:
+				throw ("Unknown operation: " + momOperation);
+		}
+		model.operationList.push(message);
 		// save message list in the local storage
-		localStorage.setItem(__messageListStorageID, JSON.stringify(ko.toJS(model).messageList));
+		localStorage.setItem(__operationListStorageID, JSON.stringify(ko.toJS(model).operationList));
 		provider.once(tx.hash, (receipt) => {
 			log.debug("Mined transaction", receipt.transactionHash);
 			log.debug(receipt);
 			// Update transaction status
-			model.messageList()
+			model.operationList()
 				.find(msg => (msg.transactionHash == receipt.transactionHash))
 				.blockNumber(receipt.blockNumber);
 			// save message list in the local storage
-			localStorage.setItem(__messageListStorageID, JSON.stringify(ko.toJS(model).messageList));
+			localStorage.setItem(__operationListStorageID, JSON.stringify(ko.toJS(model).operationList));
 		});
 	}).catch(error => log.debug("Error while signing transaction", error));
 };

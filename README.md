@@ -47,8 +47,8 @@ I don't like to use smart contract if they are not needed. And I want to spend l
 |:--------:|------------|-------------------|
 | 00       | multihash  | Add a message. The parameter is the multihash of the content. Content default is Markdown text in UTF8 without BOM |
 | 01       | multihash, multihash | Update a message. The first parameter is the message to be updated. The second parameter is the multihash of the updated message |
-| 02	   | multihash | Delete a message identified by the specified multihash |
-| 03       | multihash, multihash | Reply to a message. The first parameter is the message to reply to. The second parameter is the multihash of the message
+| 02       | multihash, multihash | Reply to a message. The first parameter is the message to reply to. The second parameter is the multihash of the message
+| 03	   | multihash | Delete a message identified by the specified multihash |
 | FE	   | Any | Custom MOM specifications
 | FF	   | Any | Raw content, no need to disclose the meaning. General client can ignore it.
 

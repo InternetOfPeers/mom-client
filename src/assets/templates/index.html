@@ -46,7 +46,8 @@
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" data-bind="visible: canSign && canUpdate, click: updateMessage" data-dismiss="modal">Next: Update message on chain</button>
+						<button type="button" class="btn btn-primary" data-bind="visible: canSign && canUpdate, click: updateMessage" data-dismiss="modal">Next:
+							Update message on chain</button>
 					</div>
 				</div>
 			</div>
@@ -151,6 +152,7 @@
 										<th>CID 1</th>
 										<th>CID 2</th>
 										<th>Transaction</th>
+										<th>Block #</th>
 									</tr>
 								</thead>
 								<tbody data-bind="foreach: operationListSorted">
@@ -159,6 +161,7 @@
 										<td data-bind="text: firstCID"></td>
 										<td data-bind="text: secondCID"></td>
 										<td data-bind="html: transactionHashLink"></td>
+										<td data-bind="html: blockNumberComputed"></td>
 									</tr>
 								</tbody>
 							</table>
@@ -260,7 +263,8 @@
 
 	<footer class="footer">
 		<div class="container">
-			<span class="text-muted">Created with <span style="color: #c00921"><i class="fas fa-heart"></i></span> by <a href="https://github.com/neurone">Giuseppe Bertone</a></span>
+			<span class="text-muted">MOM v0.3.0-dev - Created with <span style="color: #c00921"><i class="fas fa-heart"></i></span> by <a href="https://github.com/neurone">Giuseppe
+					Bertone</a></span>
 		</div>
 	</footer>
 </body>

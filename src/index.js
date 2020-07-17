@@ -15,7 +15,7 @@ require("bootstrap");
 // Messages
 const __lockedAccount = "No account found. Please unlock your Ethereum wallet.";
 const __lockedMetaMaskAccount = "No account found. Please unlock MetaMask.";
-const __legacyBrowserWarning = "Legacy or non-Ethereum browser detected. You should consider to use Brave Browser or install MetaMask.";
+const __legacyBrowserWarning = "Cannot find an ethereum wallet. You should consider to use Brave Browser or install MetaMask. If you are already using a browser that supports Ethereum, please enable your wallet.";
 const __online = "online";
 const __offline = "offline";
 const __unknown = "unknown";

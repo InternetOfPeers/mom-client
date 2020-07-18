@@ -7,7 +7,7 @@ const ipfsClient = require("ipfs-http-client");
 const hash = require("hash.js");
 const multihashes = require("multihashes");
 const $ = require("jquery");
-const mom = require("./mom");
+const mom = require("@internetofpeers/mom");
 const SimpleMDE = require("simplemde");
 
 require("bootstrap");
@@ -407,7 +407,8 @@ function Operation(operation, firstCID, secondCID, tx) {
 
 /**
  * Send a "MOM add" transaction
- * @param {string} digest
+ * @param {*} multihash
+ * @param {*} provider
  */
 let sendAddMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));

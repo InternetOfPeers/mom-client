@@ -9,7 +9,7 @@ A *live* version of MOM can be found on IPFS:
 - [TBD](#TBD)
 
 Or, you can also use the latest version directly from GitHub servers
-- https://neurone.github.io/mom
+- https://neurone.github.io/mom-client
 
 ## Project's rationales (WIP)
 

@@ -18,8 +18,8 @@
 	"dependencies": {
 		"@internetofpeers/mom": "^0.4.0",
 		"bootstrap": "^4.5.0",
-		"ethers": "^4.0.47",
 		"hash.js": "^1.1.7",
+		"ethers": "^4.0.47",
 		"ipfs-http-client": "^44.2.0",
 		"jquery": "^3.5.0",
 		"knockout": "^3.5.1",

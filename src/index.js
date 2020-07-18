@@ -508,14 +508,13 @@ window.addEventListener("load", async () => {
 	refreshIPFSStatus();
 	// Check Ethereum
 	if (window.ethereum) {
+		// MetaMask will stop auto refresh upon network change, so it will be done programmatically afterwards
+		window.ethereum.autoRefreshOnNetworkChange = false;
 		try {
 			// Request access to the Ethereum wallet
-			await window.ethereum.enable();
+			const accounts = await window.ethereum.request({ "method": "eth_requestAccounts" });
+			if (accounts[0]) model.ethAddress(accounts[0]);
 			provider = new ethers.providers.Web3Provider(window.ethereum);
-			provider.listAccounts().then(function(values) {
-				if (values[0]) model.ethAddress(values[0]);
-				log.debug("Current address:", model.ethAddress());
-			});
 			provider.getBlockNumber().then(model.ethBlockNumber);
 			provider.getNetwork().then(function(network) {
 				if (network) {
@@ -531,16 +530,15 @@ window.addEventListener("load", async () => {
 				log.debug("New block:", blockNumber);
 				model.ethBlockNumber(blockNumber);
 			});
-			provider._web3Provider.publicConfigStore.on("update", function(event) {
-				// Get changes made by user on MetaMask
-				if (event.selectedAddress) model.ethAddress(event.selectedAddress);
+			// Get changes made by user on MetaMask
+			provider._web3Provider._publicConfigStore.on("update", function(event) {
+				// Refresh page if network is changed
+				if (model.ethNetworkID() != event.networkVersion) location.reload();
+				if (provider._web3Provider.selectedAddress) model.ethAddress(provider._web3Provider.selectedAddress);
 				else if (window.ethereum.isMetaMask) model.ethAddress(__lockedMetaMaskAccount);
 				else model.ethAddress(__lockedAccount);
-				// Get new block number
 				provider.getBlockNumber().then(function(result) {
 					model.ethBlockNumber(result);
-					// Refresh page if network is changed
-					if (model.ethNetworkID() != event.networkVersion) location.reload();
 					model.ethNetworkID(event.networkVersion);
 					let network = ethers.utils.getNetwork(parseInt(event.networkVersion));
 					if (network) model.ethNetworkName(network.name);

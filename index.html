@@ -46,7 +46,27 @@
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary" data-bind="visible: canSign && canUpdate, click: updateMessage" data-dismiss="modal">Next: Update message on chain</button>
+						<button type="button" class="btn btn-primary" data-bind="visible: canSign && canUpdate, click: updateMessage" data-dismiss="modal">Next:
+							Update message on chain</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" id="myModalDelete" tabindex="-1" role="dialog" aria-labelledby="myModalDeleteTitle" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title text-danger" id="myModalDeleteTitle"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p id="myModalDeleteMessage"></p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" data-bind="visible: canSign, click: deleteMessage" data-dismiss="modal">Next: Delete message on chain</button>
 					</div>
 				</div>
 			</div>
@@ -62,7 +82,10 @@
 				<a class="nav-link" id="message-list-tab" data-toggle="tab" href="#message-list" role="tab" aria-controls="message-list" aria-selected="false">Message list</a>
 			</li>
 			<li class="nav-item">
-				<a class="nav-link" id="edit-message-tab" data-toggle="tab" href="#edit-message" role="tab" aria-controls="edit-message" aria-selected="false">Edit Message</a>
+				<a class="nav-link" id="edit-message-tab" data-toggle="tab" href="#edit-message" role="tab" aria-controls="edit-message" aria-selected="false">Update Message</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="operation-list-tab" data-toggle="tab" href="#operation-list" role="tab" aria-controls="operation-list" aria-selected="false">Operation list</a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="false">Status</a>
@@ -75,6 +98,35 @@
 			</li>
 		</ul>
 		<div class="tab-content" id="myTabContent">
+			<div class="tab-pane fade" id="message-list" role="tabpanel" aria-labelledby="message-list-tab">
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<div class="col-md">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>Actions</th>
+										<th>CID</th>
+										<th>Transaction</th>
+									</tr>
+								</thead>
+								<tbody data-bind="foreach: messageList">
+									<tr>
+										<td>
+											<button class="btn mom" data-bind="click: $parent.edit"><i class="far fa-eye"></i></button>
+											<button class="btn mom" data-bind="click: $parent.edit"><i class="far fa-edit"></i></button>
+											<button class="btn mom" data-bind="click: $parent.comment"><i class="far fa-comment-dots"></i></button>
+											<button class="btn mom" data-bind="click: $parent.delete"><i class="far fa-trash-alt"></i></button>
+										</td>
+										<td data-bind="text: cid"></td>
+										<td data-bind="html: transactionHashLink"></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
 			<div class="tab-pane fade show active" id="new-message" role="tabpanel" aria-labelledby="new-message-tab">
 				<div class="container-fluid">
 					<div class="row mt-3">
@@ -85,6 +137,34 @@
 						</div>
 						<div>
 							<button id="publish" type="button" class="btn btn-primary float-right" data-bind="click: publish">Publish</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane fade" id="operation-list" role="tabpanel" aria-labelledby="operation-list-tab">
+				<div class="container-fluid">
+					<div class="row mt-3">
+						<div class="col-md">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>Type</th>
+										<th>CID 1</th>
+										<th>CID 2</th>
+										<th>Transaction</th>
+										<th>Block #</th>
+									</tr>
+								</thead>
+								<tbody data-bind="foreach: operationListSorted">
+									<tr>
+										<td data-bind="text: operationComputed"></td>
+										<td data-bind="text: firstCID"></td>
+										<td data-bind="text: secondCID"></td>
+										<td data-bind="html: transactionHashLink"></td>
+										<td data-bind="html: blockNumberComputed"></td>
+									</tr>
+								</tbody>
+							</table>
 						</div>
 					</div>
 				</div>
@@ -113,40 +193,6 @@
 							<button id="fetch " type="button" class="btn btn-primary float-right" data-bind="click: fetch">Fetch CID</button>
 							<br /><br />
 							<button id="publish" type="button" class="btn btn-primary float-right" data-bind="click: publishUpdate">Publish update</button>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="tab-pane fade" id="message-list" role="tabpanel" aria-labelledby="message-list-tab">
-				<div class="container-fluid">
-					<div class="row mt-3">
-						<div class="col-md">
-							<table class="table table-striped">
-								<thead>
-									<tr>
-										<th>Actions</th>
-										<th>Type</th>
-										<th>Nonce</th>
-										<th>CID</th>
-										<th>Block</th>
-										<th>Transaction</th>
-									</tr>
-								</thead>
-								<tbody data-bind="foreach: messageListSorted">
-									<tr>
-										<td>
-											<button class="btn mom" data-bind="click: $parent.edit"><i class="far fa-edit"></i></button>
-											<button class="btn mom" data-bind="click: $parent.comment"><i class="far fa-comment-dots"></i></button>
-											<button class="btn mom" data-bind="click: $parent.delete"><i class="far fa-trash-alt"></i></button>
-										</td>
-										<td data-bind="text: operationComputed"></td>
-										<td data-bind="text: nonce"></td>
-										<td data-bind="text: cid"></td>
-										<td data-bind="html: blockNumberComputed"></td>
-										<td data-bind="html: transactionHashLink"></td>
-									</tr>
-								</tbody>
-							</table>
 						</div>
 					</div>
 				</div>
@@ -205,7 +251,10 @@
 			<div class="tab-pane fade" id="help" role="tabpanel" aria-labelledby="help-tab">
 				<div class="container-fluid">
 					<div class="row mt-3">
-						<p>How to (TODO)</p>
+						<div class="col-md">
+							<p>How to (TODO)</p>
+							<p>Fork the repo from <a href="https://github.com/InternetOfPeers/mom">Github</a></p>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -214,9 +263,10 @@
 
 	<footer class="footer">
 		<div class="container">
-			<span class="text-muted">Created with <span style="color: #c00921"><i class="fas fa-heart"></i></span> by <a href="https://github.com/neurone">Giuseppe Bertone</a></span>
+			<span class="text-muted">MOM v0.4.0-dev - Created with <span style="color: #c00921"><i class="fas fa-heart"></i></span> by <a href="https://github.com/neurone">Giuseppe
+					Bertone</a></span>
 		</div>
 	</footer>
-<script type="text/javascript" src="vendors~main.dabf385548cc4363ddc1.bundle.js"></script><script type="text/javascript" src="main.efa9dbcd0214cbd279a4.bundle.js"></script></body>
+<script type="text/javascript" src="vendors~main.13624498ee6b0129a101.bundle.js"></script><script type="text/javascript" src="main.2e5f55d54514d98ecc45.bundle.js"></script></body>
 
 </html>

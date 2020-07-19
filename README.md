@@ -68,7 +68,7 @@ If you don't like the standard code list, you need to deploy the specification t
 Clone the repository with:
 
 ```bash
-$ git clone https://github.com/Neurone/mom.git
+$ git clone https://github.com/InternetOfPeers/mom-client.git
 $ cd mom
 $ npm install
 $ npm start

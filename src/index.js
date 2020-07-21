@@ -7,7 +7,7 @@ const ipfsClient = require("ipfs-http-client");
 const hash = require("hash.js");
 const multihashes = require("multihashes");
 const $ = require("jquery");
-const mom = require("@internetofpeers/mom");
+const mom = require("@internetofpeers/mom-js");
 const SimpleMDE = require("simplemde");
 
 require("bootstrap");

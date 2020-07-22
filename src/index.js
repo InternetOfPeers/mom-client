@@ -503,6 +503,21 @@ let refreshIPFSStatus = async function(ms = 5000) {
 	}
 };
 
+let onUpdate = function(event) {
+	// Refresh page if network is changed
+	if (model.ethNetworkID() != event.networkVersion) location.reload();
+	if (provider._web3Provider.selectedAddress) model.ethAddress(provider._web3Provider.selectedAddress);
+	else if (window.ethereum.isMetaMask) model.ethAddress(__lockedMetaMaskAccount);
+	else model.ethAddress(__lockedAccount);
+	provider.getBlockNumber().then(function(result) {
+		model.ethBlockNumber(result);
+		model.ethNetworkID(event.networkVersion);
+		let network = ethers.utils.getNetwork(parseInt(event.networkVersion));
+		if (network) model.ethNetworkName(network.name);
+		else model.ethNetworkName(__unknown);
+	});
+}
+
 window.addEventListener("load", async () => {
 	// Start refresh loop for IPFS daemon status
 	refreshIPFSStatus();
@@ -511,10 +526,20 @@ window.addEventListener("load", async () => {
 		// MetaMask will stop auto refresh upon network change, so it will be done programmatically afterwards
 		window.ethereum.autoRefreshOnNetworkChange = false;
 		try {
-			// Request access to the Ethereum wallet
-			const accounts = await window.ethereum.request({ "method": "eth_requestAccounts" });
-			if (accounts[0]) model.ethAddress(accounts[0]);
 			provider = new ethers.providers.Web3Provider(window.ethereum);
+			// Request access to the Ethereum wallet. Brave Wallet does not implement window.ethereum.request yet, so check it
+			if (window.ethereum.request) {
+				// MetaMask
+				const accounts = await window.ethereum.request({ "method": "eth_requestAccounts" });
+				if (accounts[0]) model.ethAddress(accounts[0]);
+			} else {
+				// Brave 1.1.97
+				await window.ethereum.enable();
+				provider.listAccounts().then(function(values) {
+					if (values[0]) model.ethAddress(values[0]);
+				});
+			}
+			log.debug("Current address:", model.ethAddress());
 			provider.getBlockNumber().then(model.ethBlockNumber);
 			provider.getNetwork().then(function(network) {
 				if (network) {
@@ -531,20 +556,16 @@ window.addEventListener("load", async () => {
 				model.ethBlockNumber(blockNumber);
 			});
 			// Get changes made by user on MetaMask
-			provider._web3Provider._publicConfigStore.on("update", function(event) {
-				// Refresh page if network is changed
-				if (model.ethNetworkID() != event.networkVersion) location.reload();
-				if (provider._web3Provider.selectedAddress) model.ethAddress(provider._web3Provider.selectedAddress);
-				else if (window.ethereum.isMetaMask) model.ethAddress(__lockedMetaMaskAccount);
-				else model.ethAddress(__lockedAccount);
-				provider.getBlockNumber().then(function(result) {
-					model.ethBlockNumber(result);
-					model.ethNetworkID(event.networkVersion);
-					let network = ethers.utils.getNetwork(parseInt(event.networkVersion));
-					if (network) model.ethNetworkName(network.name);
-					else model.ethNetworkName(__unknown);
+			if (provider._web3Provider._publicConfigStore) {
+				provider._web3Provider._publicConfigStore.on("update", function(event) {
+					onUpdate(event);
 				});
-			});
+			} else {
+				provider._web3Provider.publicConfigStore.on("update", function(event) {
+					onUpdate(event);
+				});
+			}
+
 		} catch (error) {
 			// User denied account access...
 			log.error("error:", error);

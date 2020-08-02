@@ -4,7 +4,7 @@ MOM (My Own Messages) client is [MOM standard](https://github.com/InternetOfPeer
 
 ## How to use MOM
 
-A *live* version of MOM client can be found directly on [your IPFS node](ipfs://QmPMXmUjcLpQ6rzmARnvauRRctRdEmnSQsDRaGMQ7NTkKh/)
+A *live* version of MOM client can be found directly on your IPFS node: ipfs://QmPMXmUjcLpQ6rzmARnvauRRctRdEmnSQsDRaGMQ7NTkKh/
 
 Or, for a more classical client-server approach, you can obtain and use the latest version of MOM client directly from:
 - [ipfs.io gateway](https://ipfs.io/ipfs/QmPMXmUjcLpQ6rzmARnvauRRctRdEmnSQsDRaGMQ7NTkKh/)

@@ -1,8 +1,8 @@
 # MOM client
 
-MOM (My Own Messages) client is [MOM standard](https://github.com/InternetOfPeers/mom-spec) compliant ÐApp that can notarize and share messages using Ethereum and IPFS. You can give voice to your smart contract, send messages to the world, create a certified blog with your ideas, and so on.
+MOM (My Own Messages) client is an [EIP-2848](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2848.md) compliant ÐApp that can notarize and share messages using Ethereum and IPFS. You can give voice to your smart contract, send messages to the world, create a certified blog with your ideas, and so on.
 
-## How to use MOM
+## How to use MOM client
 
 A *live* version of MOM client can be found directly on your IPFS node: ipfs://QmXzD3MLpj7dvKrYDCBKPRGvmTk2KJ7x1GRpaJhXV1YqRv/
 

@@ -4,10 +4,10 @@ MOM (My Own Messages) client is an [EIP-2848](https://github.com/ethereum/EIPs/b
 
 ## How to use MOM client
 
-A *live* version of MOM client can be found directly on your IPFS node: ipfs://QmXzD3MLpj7dvKrYDCBKPRGvmTk2KJ7x1GRpaJhXV1YqRv/
+A *live* version of MOM client can be found directly on your IPFS node: ipfs://QmbDmGd7WenqkfmvDMet5mJF3r3C8Y3JiVGSgaZmkaQefN/
 
 Or, for a more classical client-server approach, you can obtain and use the latest version of MOM client directly from:
-- [ipfs.io gateway](https://ipfs.io/ipfs/QmXzD3MLpj7dvKrYDCBKPRGvmTk2KJ7x1GRpaJhXV1YqRv/)
+- [ipfs.io gateway](https://ipfs.io/ipfs/QmbDmGd7WenqkfmvDMet5mJF3r3C8Y3JiVGSgaZmkaQefN/)
 - [GitHub's servers](https://internetofpeers.github.io/mom-client)
 
 MOM does not need a smart contract, so it is already available on every current and future Ethereum network (mainnet, rinkeby, kovan, ecc.): just choose one and you are ready to go.
@@ -33,3 +33,13 @@ Development of this code is done with VSCode and in particular some plugins affe
 - Beautify ([hookyqr.beautify](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify))
 - ESLint ([dbaeumer.vscode-eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint))
 - EditorConfig for VS Code ([editorconfig.editorconfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig))
+
+## How to release (WIP waiting for grunt)
+git checkout develop
+npm run build
+ipfs add -r dist
+git flow release start x.y.z
+[] change IPFS references (2) in README.md
+[] modify verion in package.json and src/assets/template/index.html
+git add *
+git commit -m "release x.y.z"

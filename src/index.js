@@ -390,13 +390,14 @@ function Operation(operation, firstCID, secondCID, tx) {
 		/*eslint indent: [2, "tab", {"SwitchCase": 1}]*/
 		switch (self.operation()) {
 			case 0:
-				return "Add";
 			case 1:
-				return "Update";
+				return "Add";
 			case 2:
-				return "Reply";
-			case 3:
 				return "Delete";
+			case 3:
+				return "Update";
+			case 4:
+				return "Reply";
 			default:
 				self.operationComputed = __na;
 		}

@@ -104,23 +104,23 @@ let initMessageList = function() {
 	operations.forEach(op => {
 		// Apply operations
 		switch (op.operation) {
-			case 0:
+			case mom.operations.ADD:
 				// add a message
 				op.cid = op.firstCID;
 				tempMessageList[op.firstCID] = op;
 				break;
-			case 1:
+			case mom.operations.UPDATE:
 				// replace the old message
 				delete tempMessageList[op.firstCID];
 				op.cid = op.secondCID;
 				tempMessageList[op.secondCID] = op;
 				break;
-			case 2:
+			case mom.operations.REPLY:
 				// add a reply
 				op.cid = op.secondCID;
 				tempMessageList[op.secondCID] = op;
 				break;
-			case 3:
+			case mom.operations.DELETE:
 				// deleta a message
 				delete tempMessageList[op.firstCID];
 				break;
@@ -389,15 +389,14 @@ function Operation(operation, firstCID, secondCID, tx) {
 	self.operationComputed = ko.computed(function() {
 		/*eslint indent: [2, "tab", {"SwitchCase": 1}]*/
 		switch (self.operation()) {
-			case 0:
-			case 1:
+			case mom.operations.ADD:
 				return "Add";
-			case 2:
-				return "Delete";
-			case 3:
+			case mom.operations.UPDATE:
 				return "Update";
-			case 4:
+			case mom.operations.REPLY:
 				return "Reply";
+			case mom.operations.DELETE:
+				return "Delete";
 			default:
 				self.operationComputed = __na;
 		}
@@ -517,7 +516,7 @@ let onUpdate = function(event) {
 		if (network) model.ethNetworkName(network.name);
 		else model.ethNetworkName(__unknown);
 	});
-}
+};
 
 window.addEventListener("load", async () => {
 	// Start refresh loop for IPFS daemon status

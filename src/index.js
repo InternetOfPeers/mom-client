@@ -16,10 +16,11 @@ require("bootstrap");
 const __lockedAccount = "No account found. Please unlock your Ethereum wallet.";
 const __lockedMetaMaskAccount = "No account found. Please unlock MetaMask.";
 const __legacyBrowserWarning = "Cannot find an ethereum wallet. You should consider to use Brave Browser or install MetaMask. If you are already using a browser that supports Ethereum, please enable your wallet.";
-const __online = "online";
-const __offline = "offline";
-const __unknown = "unknown";
-const __na = "not available";
+const __online = "Online";
+const __offline = "Offline";
+const __offlineIPFS = "Offline. Check the settings tab and set a valid IPFS API url.";
+const __unknown = "Unknown";
+const __na = "Not available";
 const __pendingSpinner = "<div class='spinner-border spinner-border-sm text-primary' role='status'><span class='sr-only'>Loading...</span></div>";
 
 const __operationListStorageID = "MOM_OPERATION_LIST";
@@ -201,7 +202,7 @@ function defaultViewModel() {
 	ko.when(function() { return self.operationListSorted().length !== 0; }, initMessageList);
 	self.operationList.subscribe(updateMessageList, null, "arrayChange");
 	self.ipfsDaemonAddr = ko.observable(getSavedSettings().ipfsDaemonAddr);
-	self.ipfsStatus = ko.observable(__offline);
+	self.ipfsStatus = ko.observable(__offlineIPFS);
 	self.lastPublishedCID = ko.observable(__na);
 	self.lastEditCID = ko.observable(__na);
 	self.lastDeleteCID = ko.observable(__na);
@@ -492,11 +493,11 @@ let refreshIPFSStatus = async function(ms = 5000) {
 			if (ipfs) {
 				let id = await ipfs.id();
 				if (id) model.ipfsStatus(__online);
-				else model.ipfsStatus(__offline);
+				else model.ipfsStatus(__offlineIPFS);
 			}
 		} catch (exception) {
 			log.debug("Exception while refreshing IPFS status", exception);
-			model.ipfsStatus(__offline);
+			model.ipfsStatus(__offlineIPFS);
 		} finally {
 			ipfsRefreshing = false;
 		}
@@ -517,7 +518,7 @@ let onUpdate = function(event) {
 		if (network) model.ethNetworkName(network.name);
 		else model.ethNetworkName(__unknown);
 	});
-}
+};
 
 window.addEventListener("load", async () => {
 	// Start refresh loop for IPFS daemon status

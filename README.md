@@ -41,19 +41,12 @@ git flow release start X.Y.Z
 npm run build
 ipfs add -r dist
 [] change IPFS references (2) in README.md
-git add *
-git add -u
+git add *; git add -u
 git commit -m "release vX.Y.Z"
-git push
-git checkout master
-git push
-git push --tags
+git flow release finish
+git push; git checkout master; git push; git push --tags
 git checkout gh-pages
-setopt rmstarsilent
-rm *
-rm -rf images
-mv dist/* .
-git add *
-git add -u
+setopt rmstarsilent; rm *; rm -rf images; mv dist/* .
+git add *; git add -u
 git commit -m "release vX.Y.Z"
 git push

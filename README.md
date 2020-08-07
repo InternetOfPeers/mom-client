@@ -4,10 +4,10 @@ MOM (My Own Messages) client is an [EIP-2848](https://github.com/ethereum/EIPs/b
 
 ## How to use MOM client
 
-A *live* version of MOM client can be found directly on your IPFS node: ipfs://QmbDmGd7WenqkfmvDMet5mJF3r3C8Y3JiVGSgaZmkaQefN/
+A *live* version of MOM client can be found directly on your IPFS node: ipfs://QmbxARa5MxKXUpDh56ta6vjJVeM12LrJNFiXhiARp3Cij8/
 
 Or, for a more classical client-server approach, you can obtain and use the latest version of MOM client directly from:
-- [ipfs.io gateway](https://ipfs.io/ipfs/QmbDmGd7WenqkfmvDMet5mJF3r3C8Y3JiVGSgaZmkaQefN/)
+- [ipfs.io gateway](https://ipfs.io/ipfs/QmbxARa5MxKXUpDh56ta6vjJVeM12LrJNFiXhiARp3Cij8/)
 - [GitHub's servers](https://internetofpeers.github.io/mom-client)
 
 MOM does not need a smart contract, so it is already available on every current and future Ethereum network (mainnet, rinkeby, kovan, ecc.): just choose one and you are ready to go.
@@ -36,10 +36,24 @@ Development of this code is done with VSCode and in particular some plugins affe
 
 ## How to release (WIP waiting for grunt)
 git checkout develop
+git flow release start X.Y.Z
+[] modify verion in package.json and src/assets/template/index.html
 npm run build
 ipfs add -r dist
-git flow release start x.y.z
 [] change IPFS references (2) in README.md
-[] modify verion in package.json and src/assets/template/index.html
 git add *
-git commit -m "release x.y.z"
+git add -u
+git commit -m "release vX.Y.Z"
+git push
+git checkout master
+git push
+git push --tags
+git checkout gh-pages
+setopt rmstarsilent
+rm *
+rm -rf images
+mv dist/* .
+git add *
+git add -u
+git commit -m "release vX.Y.Z"
+git push

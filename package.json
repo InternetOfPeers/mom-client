@@ -1,6 +1,6 @@
 {
 	"name": "mom-client",
-	"version": "0.5.4",
+	"version": "0.5.5",
 	"description": "MOM (My Own Messages) client is a ÐApp to share and notarize messages with Ethereum and IPFS using the MOM standard. You can give voice to your smart contract, send messages to the world, create a certified blog with your ideas, and so on.",
 	"private": true,
 	"scripts": {
@@ -16,15 +16,15 @@
 	"author": "Neurone <bertone.giuseppe@gmail.com>",
 	"license": "MIT",
 	"dependencies": {
-		"@internetofpeers/mom-js": "^1.0.3",
+		"@internetofpeers/mom-js": "^1.0.4",
 		"bootstrap": "^4.5.2",
-		"ethers": "^4.0.47",
+		"ethers": "^4.0.48",
 		"hash.js": "^1.1.7",
 		"ipfs-http-client": "^44.2.0",
 		"jquery": "^3.5.0",
 		"knockout": "^3.5.1",
-		"lodash": "^4.17.19",
-		"loglevel": "^1.6.8",
+		"lodash": "^4.17.20",
+		"loglevel": "^1.7.0",
 		"multihashes": "^0.4.19",
 		"popper.js": "^1.16.1",
 		"simplemde": "^1.11.2"

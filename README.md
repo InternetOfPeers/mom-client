@@ -24,6 +24,11 @@ npm install
 npm start
 ```
 
+Note: Use Node.js 12. Using Node.js 14+ you can experience some issues caused by some sub-dependency of webpack-dev-server
+```bash
+fsevents@1.2.13: fsevents 1 will break on node v14+ and could be using insecure binaries. Upgrade to fsevents 2.
+```
+
 ## How to contribute to the MOM client
 
 ### Dealing with line endings

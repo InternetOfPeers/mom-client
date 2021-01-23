@@ -17,20 +17,20 @@
 	"license": "MIT",
 	"dependencies": {
 		"@internetofpeers/mom-js": "^1.0.4",
-		"bootstrap": "^4.5.2",
+		"bootstrap": "^4.6.0",
 		"ethers": "^4.0.48",
 		"hash.js": "^1.1.7",
-		"ipfs-http-client": "^44.2.0",
-		"jquery": "^3.5.0",
+		"ipfs-http-client": "^44.3.0",
+		"jquery": "^3.5.1",
 		"knockout": "^3.5.1",
 		"lodash": "^4.17.20",
-		"loglevel": "^1.7.0",
-		"multihashes": "^0.4.19",
+		"loglevel": "^1.7.1",
+		"multihashes": "^0.4.21",
 		"popper.js": "^1.16.1",
 		"simplemde": "^1.11.2"
 	},
 	"devDependencies": {
-		"@fortawesome/fontawesome-free": "^5.13",
+		"@fortawesome/fontawesome-free": "^5.15.2",
 		"autoprefixer": "^9.8.6",
 		"clean-webpack-plugin": "^0.1.19",
 		"css-loader": "^1.0.1",
@@ -48,9 +48,9 @@
 		"sass-loader": "^7.3.1",
 		"style-loader": "^0.23.1",
 		"url-loader": "^1.1.2",
-		"webpack": "^4.44.1",
-		"webpack-cli": "^3.3.10",
-		"webpack-dev-server": "^3.11.0",
+		"webpack": "^4.46.0",
+		"webpack-cli": "^3.3.12",
+		"webpack-dev-server": "^3.11.2",
 		"webpack-merge": "^4.2.2"
 	}
 }

@@ -4,11 +4,11 @@ MOM (My Own Messages) client is an [EIP-2848](https://github.com/ethereum/EIPs/b
 
 ## How to use MOM client
 
-A *live* version of MOM client can be found directly on your IPFS node: ipfs://QmbxARa5MxKXUpDh56ta6vjJVeM12LrJNFiXhiARp3Cij8/
+A *live* version of MOM client can be found directly on your IPFS node: ipfs://QmRJzQ9e6xwTLwp3QEBPfWwDSkXGUEaDraTszHgAvubQqk/
 
 Or, for a more classical client-server approach, you can obtain and use the latest version of MOM client directly from:
 
-- [ipfs.io gateway](https://ipfs.io/ipfs/QmbxARa5MxKXUpDh56ta6vjJVeM12LrJNFiXhiARp3Cij8/)
+- [ipfs.io gateway](https://ipfs.io/ipfs/QmRJzQ9e6xwTLwp3QEBPfWwDSkXGUEaDraTszHgAvubQqk/)
 - [GitHub's servers](https://internetofpeers.github.io/mom-client)
 
 MOM does not need a smart contract, so it is already available on every current and future Ethereum network (mainnet, rinkeby, kovan, ecc.): just choose one and you are ready to go.

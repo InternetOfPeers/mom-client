@@ -2,13 +2,13 @@ const assert = require("assert");
 const log = require("loglevel");
 const ethers = require("ethers");
 const ko = require("knockout");
-const marked = require("marked");
+//const marked = require("marked");
 const ipfsClient = require("ipfs-http-client");
 const hash = require("hash.js");
 const multihashes = require("multihashes");
 const $ = require("jquery");
 const mom = require("@internetofpeers/mom-js");
-const SimpleMDE = require("simplemde");
+const EasyMDE = require("easymde");
 
 require("bootstrap");
 
@@ -40,10 +40,13 @@ const newMessageEditorOptions = {
 	element: $("#currentMessage")[0],
 	//hideIcons: ["fullscreen"],
 	placeholder: "Write your MOM...",
+	// This should be changed with DOMpurify (https://github.com/cure53/DOMPurify) but this field is controlled by user,
+	// so preview is safe enough even with the deprecated sanitize option
+	renderingConfig: { markedOptions: { sanitize: true } },
 	spellChecker: false,
 	status: ["autosave", "lines", "words", "cursor"]
 };
-const newMessageEditor = new SimpleMDE(newMessageEditorOptions);
+const newMessageEditor = new EasyMDE(newMessageEditorOptions);
 
 const editMessageEditorOptions = {
 	autofocus: true,
@@ -53,13 +56,13 @@ const editMessageEditorOptions = {
 		delay: 1000,
 	},
 	element: $("#messageToUpdate")[0],
+	// This is already protected with DOMpurify (https://github.com/cure53/DOMPurify) but for extra safety I keep
+	// this deprecated sanitize option also
+	renderingConfig: { markedOptions: { sanitize: true } },
 	spellChecker: false,
 	status: ["autosave", "lines", "words", "cursor"]
 };
-const editMessageEditor = new SimpleMDE(editMessageEditorOptions);
-
-// set sanitize option to ignore html input
-marked.setOptions({ sanitize: true });
+const editMessageEditor = new EasyMDE(editMessageEditorOptions);
 
 // Ethereum
 let provider;
@@ -159,14 +162,14 @@ let editMessage = async function(cid) {
 		model.lastEditCID(cid);
 		editMessageEditor.value(block.data.toString());
 		$("#edit-message-tab").tab("show");
-		setTimeout(refreshEditor, 150); // Hack, but it seems to work
+		setTimeout(refreshEditor, 150); // a bit diry hack, but without it you need to click the editor to see the updated content
 	});
 };
 
 let fetchMessage = async function(cid) {
 	await ipfs.block.get(cid).then(function(block) {
 		editMessageEditor.value(block.data.toString());
-		setTimeout(refreshEditor, 150); // Hack, but it seems to work
+		setTimeout(refreshEditor, 150); // a bit diry hack, but without it you need to click the editor to see the updated content
 	});
 };
 

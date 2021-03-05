@@ -18,6 +18,7 @@
 	"dependencies": {
 		"@internetofpeers/mom-js": "^1.0.4",
 		"bootstrap": "^4.6.0",
+		"easymde": "^2.14.0",
 		"ethers": "^4.0.48",
 		"hash.js": "^1.1.7",
 		"ipfs-http-client": "^44.3.0",
@@ -26,8 +27,7 @@
 		"lodash": "^4.17.20",
 		"loglevel": "^1.7.1",
 		"multihashes": "^0.4.21",
-		"popper.js": "^1.16.1",
-		"simplemde": "^1.11.2"
+		"popper.js": "^1.16.1"
 	},
 	"devDependencies": {
 		"@fortawesome/fontawesome-free": "^5.15.2",

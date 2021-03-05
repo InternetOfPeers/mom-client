@@ -160,7 +160,7 @@ let saveSettings = function() {
 let editMessage = async function(cid) {
 	await ipfs.block.get(cid).then(function(block) {
 		model.lastEditCID(cid);
-		editMessageEditor.value(block.data.toString());
+		editMessageEditor.value(new TextDecoder("utf-8").decode(block.data));
 		$("#edit-message-tab").tab("show");
 		setTimeout(refreshEditor, 150); // a bit diry hack, but without it you need to click the editor to see the updated content
 	});
@@ -168,7 +168,7 @@ let editMessage = async function(cid) {
 
 let fetchMessage = async function(cid) {
 	await ipfs.block.get(cid).then(function(block) {
-		editMessageEditor.value(block.data.toString());
+		editMessageEditor.value(new TextDecoder("utf-8").decode(block.data));
 		setTimeout(refreshEditor, 150); // a bit diry hack, but without it you need to click the editor to see the updated content
 	});
 };
@@ -270,9 +270,9 @@ let publishToIPFS = async function(message = "", ipfs, callback) {
 	await ipfs.block.put(buffer).then(async function(block) {
 		// Do some sanity check
 		let digest = Buffer.from(hash.sha256().update(message).digest());
-		let encodedMultihash = multihashes.encode(digest, "sha2-256");
+		let encodedMultihash = Buffer.from(multihashes.encode(digest, "sha2-256"));
 		log.debug("decodedMultihash", multihashes.decode(encodedMultihash));
-		assert(block.data.equals(buffer) && block.cid.multihash.equals(encodedMultihash));
+		assert(block.data.equals(buffer) && Buffer.from(block.cid.multihash).equals(encodedMultihash));
 		model.lastPublishedCID(block.cid.toString());
 		callback(model.lastPublishedCID(), model.lastEditCID());
 	}).catch(function(error) {
@@ -416,7 +416,7 @@ function Operation(operation, firstCID, secondCID, tx) {
  */
 let sendAddMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
-	let addTransacion = mom.createAddTransaction(model.ethAddress(), multihash);
+	let addTransacion = mom.createAddTransaction(model.ethAddress(), Buffer.from(multihash));
 	sendTransaction(addTransacion, provider);
 };
 
@@ -427,7 +427,7 @@ let sendAddMessage = function(multihash, provider) {
 let sendUpdateMessage = function(originalMultihash, updatedMultihash, provider) {
 	log.debug("original", originalMultihash.toString("hex"), multihashes.toB58String(originalMultihash));
 	log.debug("updated", updatedMultihash.toString("hex"), multihashes.toB58String(updatedMultihash));
-	let updateTransaction = mom.createUpdateTransaction(model.ethAddress(), originalMultihash, updatedMultihash);
+	let updateTransaction = mom.createUpdateTransaction(model.ethAddress(), Buffer.from(originalMultihash), Buffer.from(updatedMultihash));
 	sendTransaction(updateTransaction, provider);
 };
 
@@ -437,7 +437,7 @@ let sendUpdateMessage = function(originalMultihash, updatedMultihash, provider) 
  */
 let sendDeleteMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
-	let deleteTransacion = mom.createDeleteTransaction(model.ethAddress(), multihash);
+	let deleteTransacion = mom.createDeleteTransaction(model.ethAddress(), Buffer.from(multihash));
 	sendTransaction(deleteTransacion, provider);
 };
 

@@ -8,6 +8,7 @@ A *live* version of MOM client can be found directly on your IPFS node: [ipfs://
 
 Or, for a more classical client-server approach, you can obtain and use the latest version of MOM client directly from:
 
+- [Pinata gateway](https://gateway.pinata.cloud/ipfs/Qmd4TVXHgYoiHMgpyvJd165dyAb93mU8GZJ6Yv2YLxfdmY)
 - [ipfs.io gateway](https://ipfs.io/ipfs/Qmd4TVXHgYoiHMgpyvJd165dyAb93mU8GZJ6Yv2YLxfdmY/)
 - [GitHub's servers](https://internetofpeers.github.io/mom-client)
 

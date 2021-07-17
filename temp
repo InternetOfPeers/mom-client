@@ -1,0 +1,53 @@
+operationList
+
+from: "0x338A1DA29e96C1Bf46b46c61f5a367DC5137Ce65"
+to: "0x338A1DA29e96C1Bf46b46c61f5a367DC5137Ce65"
+blockNumber: 26022817
+blockNumberComputed: 26022817
+firstCID: "QmTwMpZueXVsmiPhM5CeRq3PYXbdjpQU3RHyewa1hbSDDv"
+from: "0x338A1DA29e96C1Bf46b46c61f5a367DC5137Ce65"
+networkID: 42
+nonce: 17
+operation: 0
+operationComputed: "Add"
+secondCID: ""
+to: "0x338A1DA29e96C1Bf46b46c61f5a367DC5137Ce65"
+transactionHash: "0x302fd635a34fc08b9ae018b1095adb6225c96d7a652f69d612c62ecc11803c71"
+transactionHashLink: "<a target='_blank' href='https://kovan.etherscan.io/tx/0x302fd635a34fc08b9ae018b1095adb6225c96d7a652f69d612c62ecc11803c71'>0x302fd635...</a>"
+
+etherscan
+
+blockNumber: "9201222"
+timeStamp: "1577972409"
+blockHash: "0x861b3872de1adebba9fc2fc1b728819bcbf16d2c598fa7e9b5b75bfec30d5f15"
+blockNumber: "9201222"
+from: "0x0681d8db095565fe8a346fa0277bffde9c0edbbf"
+hash: "0x6989a0e86db0eac0008b99eff751eb4a684b85189707b8b1dac934bcdd46de88"
+input: "0x"
+isError: "0"
+nonce: "1870529"
+timeStamp: "1577972409"
+to: "0x338a1da29e96c1bf46b46c61f5a367dc5137ce65"
+value: "310000000000000000"
+
+
+
+
+
+
+operation list
+[{
+"from":"0x338A1DA29e96C1Bf46b46c61f5a367DC5137Ce65",
+"networkID":42
+"transactionHash":"0xff371a4ed41792ddefd5acd34e6546177eb8fdc746149e57892ad4016d668dc1",
+"transactionHashLink":"<a target='_blank' href='https://kovan.etherscan.io/tx/0xff371a4ed41792ddefd5acd34e6546177eb8fdc746149e57892ad4016d668dc1'>0xff371a4e...</a>",
+"nonce":18,
+"blockNumber":26023513,
+"blockNumberComputed":26023513,
+"operation":0,
+"operationComputed":"Add",
+"firstCID":"QmTwMpZueXVsmiPhM5CeRq3PYXbdjpQU3RHyewa1hbSDDv",
+"secondCID":""
+}]
+
+

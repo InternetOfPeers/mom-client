@@ -28,6 +28,7 @@ const __settingsStorageID = "MOM_SETTINGS";
 
 // Default settings
 const DEFAULT_IPFS_DAEMON_MULTIADDR = "/ip4/127.0.0.1/tcp/5001";
+const DEFAULT_TX_INDEXER_BASE_URL = "https://api.etherscan.io/api?module=account&action=txlist&startblock=0&endblock=99999999&sort=asc";
 
 // Init the editors
 const newMessageEditorOptions = {
@@ -377,10 +378,14 @@ let getEtherscanPrefixBy = function(networkID) {
  * @param {*} tx
  */
 function Operation(operation, firstCID, secondCID, tx) {
+	// Check if operation is valid
+	if ((tx.from != tx.to) || tx.value != 0) {
+		log.error("This is not a MOM compliant transaction", tx);
+		return {};
+	}
 	let self = this;
 	self.from = tx.from;
-	self.to = tx.to;
-	self.networkID = tx.chainId;
+	self.networkID = (typeof tx.value == "undefined") ? 1 : tx.chainId;
 	self.transactionHash = tx.hash;
 	let etherscanPrefix = getEtherscanPrefixBy(self.networkID);
 	self.transactionHashLink = `<a target='_blank' href='https://${etherscanPrefix}etherscan.io/tx/` + tx.hash + "'>" + tx.hash.substring(0, 10) + "..." + "</a>";
@@ -416,8 +421,8 @@ function Operation(operation, firstCID, secondCID, tx) {
  */
 let sendAddMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
-	let addTransacion = mom.createAddTransaction(model.ethAddress(), Buffer.from(multihash));
-	sendTransaction(addTransacion, provider);
+	let addTransaction = mom.createAddTransaction(model.ethAddress(), Buffer.from(multihash));
+	sendTransaction(addTransaction, provider);
 };
 
 /**
@@ -437,10 +442,9 @@ let sendUpdateMessage = function(originalMultihash, updatedMultihash, provider) 
  */
 let sendDeleteMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
-	let deleteTransacion = mom.createDeleteTransaction(model.ethAddress(), Buffer.from(multihash));
-	sendTransaction(deleteTransacion, provider);
+	let deleteTransaction = mom.createDeleteTransaction(model.ethAddress(), Buffer.from(multihash));
+	sendTransaction(deleteTransaction, provider);
 };
-
 
 /**
  * Sign and send a MOM transaction
@@ -449,26 +453,26 @@ let sendDeleteMessage = function(multihash, provider) {
  */
 let sendTransaction = function(transaction, provider) {
 	let promise = provider.getSigner().sendTransaction(transaction);
-	let momOperation = transaction.data[0]; // First byte of the payload
+	let operationType = transaction.data[0]; // First byte of the payload
 	promise.then(tx => {
 		log.debug("Signed transaction", tx.hash);
 		assert(tx.from === tx.to, "Signer and receiver must be the same!");
-		let message = {};
-		switch (momOperation) {
+		let operation = {};
+		switch (operationType) {
 			case mom.operations.ADD:
-				message = new Operation(momOperation, model.lastPublishedCID(), "", tx);
+				operation = new Operation(operationType, model.lastPublishedCID(), "", tx);
 				break;
 			case mom.operations.UPDATE:
 			case mom.operations.REPLY:
-				message = new Operation(momOperation, model.lastEditCID(), model.lastPublishedCID(), tx);
+				operation = new Operation(operationType, model.lastEditCID(), model.lastPublishedCID(), tx);
 				break;
 			case mom.operations.DELETE:
-				message = new Operation(momOperation, model.lastDeleteCID(), "", tx);
+				operation = new Operation(operationType, model.lastDeleteCID(), "", tx);
 				break;
 			default:
-				throw ("Unknown operation: " + momOperation);
+				throw ("Unknown operation: " + operationType);
 		}
-		model.operationList.push(message);
+		model.operationList.push(operation);
 		// save message list in the local storage
 		localStorage.setItem(__operationListStorageID, JSON.stringify(ko.toJS(model).operationList));
 		provider.once(tx.hash, (receipt) => {
@@ -482,6 +486,21 @@ let sendTransaction = function(transaction, provider) {
 			localStorage.setItem(__operationListStorageID, JSON.stringify(ko.toJS(model).operationList));
 		});
 	}).catch(error => log.debug("Error while signing transaction", error));
+};
+
+/** 
+ * Fetch messages from the blockchain
+ * @param {string} address
+ */
+let fetchOperationsByAddress = function(address) {
+	// fetch data from url
+	let url = `${DEFAULT_TX_INDEXER_BASE_URL}&address=${address}&apikey=8MNF9CM5VVRIPX3Q8R5619VUHXFF9IPZ2B`;
+	log.debug("Fetching data from", url);
+	return $.get(url).then(response => response.result);
+};
+
+let parseMOMOperation = function(rawOperation) {
+	return new Operation(0, "1", "2", rawOperation);
 };
 
 /**
@@ -519,6 +538,17 @@ let onUpdate = function(event) {
 		let network = ethers.utils.getNetwork(parseInt(event.networkVersion));
 		if (network) model.ethNetworkName(network.name);
 		else model.ethNetworkName(__unknown);
+	});
+	fetchOperationsByAddress(model.ethAddress()).then(function(indexedOperations) {
+		log.debug("messages", indexedOperations);
+		/*
+		indexedOperations.forEach(indexedOperation => {
+			let momOperation = parseMOMOperation(indexedOperation);
+			if (momOperation != "") model.operationList.push(momOperation);
+		});
+		*/
+		// save message list in the local storage
+		//localStorage.setItem(__operationListStorageID, JSON.stringify(ko.toJS(model).operationList));
 	});
 };
 

@@ -103,7 +103,7 @@ let updateMessageList = function(changes) {
 
 let initMessageList = function() {
 	let tempMessageList = [];
-	// Set array in covenient order
+	// Set array in convenient order
 	let operations = model.operationListSorted().sort((left, right) => (left.nonce - right.nonce));
 	operations.forEach(op => {
 		// Apply operations
@@ -125,7 +125,7 @@ let initMessageList = function() {
 				tempMessageList[op.secondCID] = op;
 				break;
 			case mom.operations.DELETE:
-				// deleta a message
+				// delete a message
 				delete tempMessageList[op.firstCID];
 				break;
 			default:
@@ -162,14 +162,14 @@ let editMessage = async function(cid) {
 		model.lastEditCID(cid);
 		editMessageEditor.value(new TextDecoder("utf-8").decode(block.data));
 		$("#edit-message-tab").tab("show");
-		setTimeout(refreshEditor, 150); // a bit diry hack, but without it you need to click the editor to see the updated content
+		setTimeout(refreshEditor, 150); // a bit dirty hack, but without it you need to click the editor to see the updated content
 	});
 };
 
 let fetchMessage = async function(cid) {
 	await ipfs.block.get(cid).then(function(block) {
 		editMessageEditor.value(new TextDecoder("utf-8").decode(block.data));
-		setTimeout(refreshEditor, 150); // a bit diry hack, but without it you need to click the editor to see the updated content
+		setTimeout(refreshEditor, 150); // a bit dirty hack, but without it you need to click the editor to see the updated content
 	});
 };
 
@@ -244,7 +244,7 @@ function defaultViewModel() {
 		publishToIPFS(editMessageEditor.value(), ipfs, successfulUpdate);
 	};
 	self.comment = function(message) {
-		// TODO
+		//TODO:
 		log.debug(message);
 	};
 }
@@ -416,8 +416,8 @@ function Operation(operation, firstCID, secondCID, tx) {
  */
 let sendAddMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
-	let addTransacion = mom.createAddTransaction(model.ethAddress(), Buffer.from(multihash));
-	sendTransaction(addTransacion, provider);
+	let addTransaction = mom.createAddTransaction(model.ethAddress(), Buffer.from(multihash));
+	sendTransaction(addTransaction, provider);
 };
 
 /**
@@ -437,8 +437,8 @@ let sendUpdateMessage = function(originalMultihash, updatedMultihash, provider) 
  */
 let sendDeleteMessage = function(multihash, provider) {
 	log.debug(multihash.toString("hex"), multihashes.toB58String(multihash));
-	let deleteTransacion = mom.createDeleteTransaction(model.ethAddress(), Buffer.from(multihash));
-	sendTransaction(deleteTransacion, provider);
+	let deleteTransaction = mom.createDeleteTransaction(model.ethAddress(), Buffer.from(multihash));
+	sendTransaction(deleteTransaction, provider);
 };
 
 
@@ -587,40 +587,40 @@ window.addEventListener("load", async () => {
 /*
 Transaction Response
 {
-    // Only available for mined transactions
-    blockHash: "0x7f20ef60e9f91896b7ebb0962a18b8defb5e9074e62e1b6cde992648fe78794b",
-    blockNumber: 3346463,
-    timestamp: 1489440489,
+	// Only available for mined transactions
+	blockHash: "0x7f20ef60e9f91896b7ebb0962a18b8defb5e9074e62e1b6cde992648fe78794b",
+	blockNumber: 3346463,
+	timestamp: 1489440489,
 
-    // Exactly one of these will be present (send vs. deploy contract)
-    // They will always be a properly formatted checksum address
-    creates: null,
-    to: "0xc149Be1bcDFa69a94384b46A1F91350E5f81c1AB",
+	// Exactly one of these will be present (send vs. deploy contract)
+	// They will always be a properly formatted checksum address
+	creates: null,
+	to: "0xc149Be1bcDFa69a94384b46A1F91350E5f81c1AB",
 
-    // The transaction hash
-    hash: "0xf517872f3c466c2e1520e35ad943d833fdca5a6739cfea9e686c4c1b3ab1022e",
+	// The transaction hash
+	hash: "0xf517872f3c466c2e1520e35ad943d833fdca5a6739cfea9e686c4c1b3ab1022e",
 
-    // See above "Transaction Requests" for details
-    data: "0x",
-    from: "0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8",
-    gasLimit: utils.bigNumberify("90000"),
-    gasPrice: utils.bigNumberify("21488430592"),
-    nonce: 0,
-    value: utils.parseEther(1.0017071732629267),
+	// See above "Transaction Requests" for details
+	data: "0x",
+	from: "0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8",
+	gasLimit: utils.bigNumberify("90000"),
+	gasPrice: utils.bigNumberify("21488430592"),
+	nonce: 0,
+	value: utils.parseEther(1.0017071732629267),
 
-    // The chain ID; 0 indicates replay-attack vulnerable
-    // (eg. 1 = Homestead mainnet, 3 = Ropsten testnet)
-    chainId: 1,
+	// The chain ID; 0 indicates replay-attack vulnerable
+	// (eg. 1 = Homestead mainnet, 3 = Ropsten testnet)
+	chainId: 1,
 
-    // The signature of the transaction (TestRPC may fail to include these)
-    r: "0x5b13ef45ce3faf69d1f40f9d15b0070cc9e2c92f3df79ad46d5b3226d7f3d1e8",
-    s: "0x535236e497c59e3fba93b78e124305c7c9b20db0f8531b015066725e4bb31de6",
-    v: 37,
+	// The signature of the transaction (TestRPC may fail to include these)
+	r: "0x5b13ef45ce3faf69d1f40f9d15b0070cc9e2c92f3df79ad46d5b3226d7f3d1e8",
+	s: "0x535236e497c59e3fba93b78e124305c7c9b20db0f8531b015066725e4bb31de6",
+	v: 37,
 
-    // The raw transaction (TestRPC may be missing this)
-    raw: "0xf87083154262850500cf6e0083015f9094c149be1bcdfa69a94384b46a1f913" +
-           "50e5f81c1ab880de6c75de74c236c8025a05b13ef45ce3faf69d1f40f9d15b0" +
-           "070cc9e2c92f3df79ad46d5b3226d7f3d1e8a0535236e497c59e3fba93b78e1" +
-           "24305c7c9b20db0f8531b015066725e4bb31de6"
+	// The raw transaction (TestRPC may be missing this)
+	raw: "0xf87083154262850500cf6e0083015f9094c149be1bcdfa69a94384b46a1f913" +
+		   "50e5f81c1ab880de6c75de74c236c8025a05b13ef45ce3faf69d1f40f9d15b0" +
+		   "070cc9e2c92f3df79ad46d5b3226d7f3d1e8a0535236e497c59e3fba93b78e1" +
+		   "24305c7c9b20db0f8531b015066725e4bb31de6"
 }
 */

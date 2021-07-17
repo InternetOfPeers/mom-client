@@ -1,1 +1,4 @@
-.messageBox {}
+.messageBox {
+	/* override already defined class */
+	color: black;
+}
